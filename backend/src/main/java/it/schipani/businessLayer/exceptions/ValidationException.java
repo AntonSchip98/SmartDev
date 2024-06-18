@@ -1,10 +1,13 @@
 package it.schipani.businessLayer.exceptions;
 
+import java.io.Serial;
+
 /**
  * Eccezione verificatasi in fase di validazione dei model in input ai controllers.
  *
  */
 public class ValidationException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public ValidationException() {
@@ -25,7 +28,7 @@ public class ValidationException extends RuntimeException {
 
     public ValidationException(Throwable cause) {
         super(cause);
-        // TODO Auto-generated constructor stub
+
     }
 
 

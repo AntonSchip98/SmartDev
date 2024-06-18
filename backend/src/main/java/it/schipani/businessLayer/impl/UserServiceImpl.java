@@ -1,11 +1,8 @@
 package it.schipani.businessLayer.impl;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import it.schipani.businessLayer.dto.LoginUserDto;
 import it.schipani.businessLayer.dto.RegisterUserDto;
 import it.schipani.businessLayer.dto.RegisteredUserDto;
-import it.schipani.businessLayer.exceptions.FileSizeExceededException;
 import it.schipani.businessLayer.exceptions.InvalidLoginException;
 import it.schipani.businessLayer.services.UserService;
 import it.schipani.config.JwtUtils;
@@ -14,18 +11,19 @@ import it.schipani.dataLayer.repositories.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceException;
-import jakarta.persistence.Transient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -35,9 +33,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    @Autowired
     private final PasswordEncoder encoder;
+
+    @Autowired
     private final UserRepository usersRepository;
+
+    @Autowired
     private final AuthenticationManager auth;
+
+    @Autowired
     private final JwtUtils jwt;
 
 
@@ -62,7 +67,8 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             log.error(String.format("Exception saving user %s", user), e);
             throw new PersistenceException(String.valueOf(user));
-        }    }
+        }
+    }
 
     @Override
     public Optional<LoginUserDto> login(String username, String password) {
@@ -86,6 +92,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @ResponseStatus(code = HttpStatus.OK)
     public Optional<RegisteredUserDto> get(long id) {
         try {
             User user = usersRepository.findById(id).orElseThrow();
@@ -95,6 +102,50 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             log.error(String.format("User not found for id %s", id), e);
             return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<RegisteredUserDto> update(long id, RegisterUserDto user) {
+        try {
+            User existingUser = usersRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+            if (!existingUser.getUsername().equals(user.getUsername()) && usersRepository.existsByUsername(user.getUsername())) {
+                throw new EntityExistsException("Username already exists");
+            }
+            if (!existingUser.getEmail().equals(user.getEmail()) && usersRepository.existsByEmail(user.getEmail())) {
+                throw new EntityExistsException("Email already exists");
+            }
+            BeanUtils.copyProperties(user, existingUser, "id", "password");
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                String encryptedPassword = encoder.encode(user.getPassword());
+                log.info("Password encrypted: {}", encryptedPassword);
+                existingUser.setPassword(encryptedPassword);
+            }
+            usersRepository.save(existingUser);
+            RegisteredUserDto dto = new RegisteredUserDto();
+            BeanUtils.copyProperties(existingUser, dto);
+            return Optional.of(dto);
+        } catch (EntityNotFoundException e) {
+            log.error(String.format("User not found for id %s", id), e);
+            return Optional.empty();
+        } catch (Exception e) {
+            log.error(String.format("Exception updating user %s", user), e);
+            throw new PersistenceException(String.valueOf(user));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void delete(long id) {
+        try {
+            User user = usersRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+            usersRepository.delete(user);
+        } catch (EntityNotFoundException e) {
+            log.error(String.format("User not found for id %s", id), e);
+            throw e;
+        } catch (Exception e) {
+            log.error(String.format("Exception deleting user with id %s", id), e);
+            throw new PersistenceException(String.valueOf(id));
         }
     }
 
