@@ -17,5 +17,6 @@ public class RegisteredUserDto {
     private Long id;
     private String username;
     private String email;
+    private String avatar;
     private List<Identity> identities;
 }

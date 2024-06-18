@@ -34,6 +34,7 @@ public class ApplicationSecurityConfig {
         return new AuthTokenFilter();
     }
 
+
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http,
                                                        PasswordEncoder passwordEncoder,
@@ -47,7 +48,6 @@ public class ApplicationSecurityConfig {
 
         return authenticationManagerBuilder.build();
     }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -55,7 +55,7 @@ public class ApplicationSecurityConfig {
                 .cors(Customizer.withDefaults()) // Utilizza la configurazione CORS
                 .authorizeHttpRequests(authorize -> authorize //Configurazione delle protezioni dei vari endpoint
                         .requestMatchers("/api/users/login").permitAll() // Permetti l'accesso anonimo all'API di login
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll() // Permetti la registrazione di un utente
+                        .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll() // Permetti la registrazione di un utente
                         .requestMatchers(HttpMethod.GET, "/**").authenticated() // Richiedi autenticazione per tutte le GET
                         .requestMatchers(HttpMethod.POST, "/**").authenticated() // Richiedi autenticazione per tutte le POST
                         .requestMatchers(HttpMethod.PUT, "/**").authenticated() // Richiedi autenticazione per tutte le PUT
@@ -69,7 +69,7 @@ public class ApplicationSecurityConfig {
         return http.build();
     }
 
-    @Bean
+   /* @Bean
     public JavaMailSenderImpl getJavaMailSender(@Value("${gmail.mail.transport.protocol}") String protocol,
                                                 @Value("${gmail.mail.smtp.auth}") String auth,
                                                 @Value("${gmail.mail.smtp.starttls.enable}") String starttls,
@@ -94,5 +94,5 @@ public class ApplicationSecurityConfig {
         props.put("smtp.ssl.enable", ssl);
 
         return mailSender;
-    }
+    }*/
 }

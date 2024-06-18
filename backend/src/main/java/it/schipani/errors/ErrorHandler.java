@@ -6,12 +6,15 @@ import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.HashMap;
@@ -19,14 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Order(Ordered.HIGHEST_PRECEDENCE)//Assicura che questa configurazione di gestione delle eccezioni abbia la massima priorità.
-@RestControllerAdvice // Combina le funzionalità di @ControllerAdvice e @ResponseBody, permettendo di gestire le eccezioni lanciate dai controller
-// restituendo direttamente le risposte HTTP.
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@RestControllerAdvice
 public class ErrorHandler extends ResponseEntityExceptionHandler {
 
     // Classe interna per gestire gli errori di validazione specifici del campo
     public record ValidationError(String field, String message) {
     }
+
     // Gestione di FieldValidationException
     @ExceptionHandler(FieldValidationException.class)
     protected ResponseEntity<?> handleFieldValidationException(FieldValidationException e) {
@@ -54,18 +57,15 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(error.getMessage(), HttpStatus.CONFLICT);
     }
 
-    // Gestione di MethodArgumentNotValidException
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException error) {
-        Map<String, String> errorResponse = new HashMap<>();
-        error.getBindingResult().getAllErrors().forEach(
-                er -> {
-                    FieldError fieldError = (FieldError) er;
-                    String fieldName = fieldError.getField();
-                    String errorMessage = er.getDefaultMessage();
-                    errorResponse.put(fieldName, errorMessage);
-                }
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    // Sovrascrive il metodo di ResponseEntityExceptionHandler per gestire MethodArgumentNotValidException
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 }
