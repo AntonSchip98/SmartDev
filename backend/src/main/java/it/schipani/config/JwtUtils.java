@@ -17,14 +17,15 @@ public class JwtUtils {
 
     @Value("${jwt.key}")
     private String securityKey;
+
     @Value("${jwt.expirationMs}")
     private long expirationMs;
 
     public String generateToken(Authentication auth) {
+        SecurityUserDetails user = (SecurityUserDetails) auth.getPrincipal();
         byte[] keyBytes = securityKey.getBytes();
-        Key key = Keys.hmacShaKeyFor(keyBytes);
+        SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-        var user = (SecurityUserDetails) auth.getPrincipal();
         return Jwts.builder()
                 .subject(user.getUsername())
                 .issuedAt(new Date())

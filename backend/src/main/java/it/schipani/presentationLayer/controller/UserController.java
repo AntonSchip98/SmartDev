@@ -1,94 +1,74 @@
 package it.schipani.presentationLayer.controller;
 
-import it.schipani.businessLayer.dto.LoginUserDto;
-import it.schipani.businessLayer.dto.RegisterUserDto;
-import it.schipani.businessLayer.dto.RegisteredUserDto;
-import it.schipani.businessLayer.exceptions.ApiValidationException;
-import it.schipani.businessLayer.impl.UserServiceImpl;
+import it.schipani.businessLayer.dto.UserDto.LoginUserDto;
+import it.schipani.businessLayer.dto.UserDto.RegisterUserDto;
+import it.schipani.businessLayer.dto.UserDto.RegisteredUserDto;
+import it.schipani.businessLayer.dto.UserDto.UpdateUserDto;
 import it.schipani.businessLayer.services.UserService;
-import it.schipani.dataLayer.repositories.UserRepository;
-import it.schipani.presentationLayer.model.LoginUserModel;
-import it.schipani.presentationLayer.model.RegisterUserModel;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import it.schipani.presentationLayer.model.Requests.LoginUserRequest;
+import it.schipani.presentationLayer.model.Requests.RegisterUserRequest;
+import it.schipani.presentationLayer.model.Requests.UpdateUserRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserServiceImpl user;
-
-    @Autowired
-    private UserRepository userRepository;
-
-
+    private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<RegisteredUserDto> register(@RequestBody @Validated RegisterUserModel model,
-                                                      BindingResult validator) {
-        if (validator.hasErrors()) {
-            throw new ApiValidationException(validator.getAllErrors());
-        }
-        var registeredUser = user.register(
-                RegisterUserDto.builder()
-                        .withUsername(model.username())
-                        .withEmail(model.email())
-                        .withPassword(model.password())
-                        .build());
+    public ResponseEntity<RegisteredUserDto> register(@RequestBody RegisterUserRequest userRequest) {
+        var registerUserDto = RegisterUserDto.builder()
+                .withUsername(userRequest.username())
+                .withEmail(userRequest.email())
+                .withPassword(userRequest.password())
+                .build();
 
-        return new ResponseEntity<>(registeredUser, HttpStatus.OK);
+        var registeredUser = userService.register(registerUserDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginUserDto> login(@RequestBody @Validated LoginUserModel model, BindingResult validator) {
-        if (validator.hasErrors()) {
-            throw new ApiValidationException(validator.getAllErrors());
-        }
-        return new ResponseEntity<>(user.login(model.username(), model.password()).orElseThrow(), HttpStatus.OK);
+    public ResponseEntity<LoginUserDto> login(@RequestBody LoginUserRequest userRequest) {
+        Optional<LoginUserDto> loginUser = userService.login(userRequest.username(), userRequest.password());
+
+        return loginUser.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(code = HttpStatus.OK)
-    public Optional<RegisteredUserDto> get(@PathVariable long id) {
-        return user.get(id);
+    public ResponseEntity<RegisteredUserDto> getUser(@PathVariable long id) {
+        Optional<RegisteredUserDto> user = userService.get(id);
+
+        return user.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
     @PutMapping("/{id}")
-    public ResponseEntity<RegisteredUserDto> update(@PathVariable long id, @RequestBody @Validated RegisterUserModel model, BindingResult validator) {
-        if (validator.hasErrors()) {
-            throw new ApiValidationException(validator.getAllErrors());
-        }
-        var updatedUser = user.update(id,
-                RegisterUserDto.builder()
-                        .withUsername(model.username())
-                        .withEmail(model.email())
-                        .withPassword(model.password())
-                        .build());
+    public ResponseEntity<UpdateUserDto> updateUser(@PathVariable long id, @RequestBody UpdateUserRequest userRequest) {
+        var updateUserDto = UpdateUserDto.builder()
+                .withUsername(userRequest.username())
+                .withEmail(userRequest.email())
+                .withAvatar(userRequest.avatar())
+                .withPassword(userRequest.password()) // Aggiungi il campo password
+                .build();
+
+        Optional<UpdateUserDto> updatedUser = userService.update(id, updateUserDto);
 
         return updatedUser.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") long id) {
-        try {
-            user.delete(id);
-            return ResponseEntity.noContent().build();
-        } catch (EntityNotFoundException e) {
-            log.error("User not found for id: {}", id, e);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            log.error("Exception deleting user with id: {}", id, e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable long id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,100 +1,113 @@
 package it.schipani.businessLayer.impl;
 
-import it.schipani.businessLayer.dto.IdentityRequest;
-import it.schipani.businessLayer.dto.IdentityResponse;
+import it.schipani.businessLayer.dto.IdentityDto.CreateIdentityDto;
+import it.schipani.businessLayer.dto.IdentityDto.IdentityDto;
+import it.schipani.businessLayer.dto.IdentityDto.UpdateIdentityDto;
+import it.schipani.businessLayer.exceptions.PersistEntityException;
 import it.schipani.businessLayer.services.IdentityService;
 import it.schipani.dataLayer.entities.Identity;
+import it.schipani.dataLayer.entities.Task;
 import it.schipani.dataLayer.repositories.IdentityRepository;
+import it.schipani.dataLayer.repositories.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceException;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class IdentityServiceImpl implements IdentityService {
 
-    private final IdentityRepository identityRepository;
+    @Autowired
+    private IdentityRepository identityRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
-    @Transactional
-    public IdentityResponse create(IdentityRequest identityRequest) {
+    public IdentityDto createIdentity(Long userId, CreateIdentityDto identityDto) {
+        var user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        if (user.getIdentities().size() >= 3) {
+            throw new EntityExistsException("User cannot have more than 3 identities");
+        }
         try {
             Identity identity = new Identity();
-            BeanUtils.copyProperties(identityRequest, identity);
-            identity.setCreatedAt(LocalDateTime.now());
+            BeanUtils.copyProperties(identityDto, identity);
+            identity.setUser(user);
+
+            user.getIdentities().add(identity);
             identityRepository.save(identity);
-            IdentityResponse responseDTO = new IdentityResponse();
-            BeanUtils.copyProperties(identity, responseDTO);
-            return responseDTO;
+
+            return IdentityDto.builder()
+                    .withId(identity.getId())
+                    .withTitle(identity.getTitle())
+                    .withDescription(identity.getDescription())
+                    .withCreatedAt(identity.getCreatedAt())
+                    .withUserId(identity.getUser().getId())
+                    .withTasks(identity.getTasks().stream()
+                            .map(Task::getId).collect(Collectors.toList()))
+                    .build();
         } catch (Exception e) {
-            log.error("Exception creating identity", e);
-            throw new PersistenceException("Failed to create identity");
+            log.error(String.format("Exception saving identity %s", identityDto), e);
+            throw new PersistEntityException(identityDto);
         }
     }
 
     @Override
-    public Optional<IdentityResponse> get(long id) {
-        try {
-            Identity identity = identityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Identity not found"));
-            IdentityResponse responseDTO = new IdentityResponse();
-            BeanUtils.copyProperties(identity, responseDTO);
-            return Optional.of(responseDTO);
-        } catch (EntityNotFoundException e) {
-            log.error("Identity not found for id {}", id, e);
-            return Optional.empty();
-        }
+    public Optional<IdentityDto> getIdentityById(Long id) {
+        return identityRepository.findById(id).map(identity -> IdentityDto.builder()
+                .withId(identity.getId())
+                .withTitle(identity.getTitle())
+                .withDescription(identity.getDescription())
+                .withCreatedAt(identity.getCreatedAt())
+                .withUserId(identity.getUser().getId())
+                .withTasks(identity.getTasks().stream().map(Task::getId)
+                        .collect(Collectors.toList()))
+                .build());
     }
 
     @Override
-    public List<IdentityResponse> getAll() {
-        return identityRepository.findAll().stream().map(identity -> {
-            IdentityResponse responseDTO = new IdentityResponse();
-            BeanUtils.copyProperties(identity, responseDTO);
-            return responseDTO;
-        }).collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional
-    public Optional<IdentityResponse> update(long id, IdentityRequest identityRequest) {
-        try {
-            Identity identity = identityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Identity not found"));
-            BeanUtils.copyProperties(identityRequest, identity, "id", "createdAt");
+    public Optional<IdentityDto> updateIdentity(Long id, UpdateIdentityDto identityDto) {
+        return identityRepository.findById(id).map(identity -> {
+            BeanUtils.copyProperties(identityDto, identity);
             identityRepository.save(identity);
-            IdentityResponse responseDTO = new IdentityResponse();
-            BeanUtils.copyProperties(identity, responseDTO);
-            return Optional.of(responseDTO);
-        } catch (EntityNotFoundException e) {
-            log.error("Identity not found for id {}", id, e);
-            return Optional.empty();
-        } catch (Exception e) {
-            log.error("Exception updating identity", e);
-            throw new PersistenceException("Failed to update identity");
-        }
+            return IdentityDto.builder()
+                    .withId(identity.getId())
+                    .withTitle(identity.getTitle())
+                    .withDescription(identity.getDescription())
+                    .withCreatedAt(identity.getCreatedAt())
+                    .withUserId(identity.getUser().getId())
+                    .withTasks(identity.getTasks().stream().map(task -> task.getId()).collect(Collectors.toList()))
+                    .build();
+        });
     }
 
     @Override
-    @Transactional
-    public void delete(long id) {
-        try {
-            Identity identity = identityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Identity not found"));
-            identityRepository.delete(identity);
-        } catch (EntityNotFoundException e) {
-            log.error("Identity not found for id {}", id, e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Exception deleting identity with id {}", id, e);
-            throw new PersistenceException("Failed to delete identity");
+    public void deleteIdentity(Long id) {
+        if (!identityRepository.existsById(id)) {
+            throw new EntityNotFoundException("Identity not found");
         }
+        identityRepository.deleteById(id);
+    }
+
+    @Override
+    public List<IdentityDto> getAllIdentitiesByUser(Long userId) {
+        return identityRepository.findAllByUserId(userId).stream()
+                .map(identity -> IdentityDto.builder()
+                        .withId(identity.getId())
+                        .withTitle(identity.getTitle())
+                        .withDescription(identity.getDescription())
+                        .withCreatedAt(identity.getCreatedAt())
+                        .withUserId(identity.getUser().getId())
+                        .withTasks(identity.getTasks().stream().map(Task::getId)
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
     }
 }

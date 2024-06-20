@@ -1,16 +1,16 @@
 package it.schipani.businessLayer.services;
 
-import it.schipani.businessLayer.dto.LoginUserDto;
-import it.schipani.businessLayer.dto.RegisterUserDto;
-import it.schipani.businessLayer.dto.RegisteredUserDto;
+import it.schipani.businessLayer.dto.UserDto.LoginUserDto;
+import it.schipani.businessLayer.dto.UserDto.RegisterUserDto;
+import it.schipani.businessLayer.dto.UserDto.RegisteredUserDto;
+import it.schipani.businessLayer.dto.UserDto.UpdateUserDto;
 
 import java.util.Optional;
-
 
 public interface UserService {
     RegisteredUserDto register(RegisterUserDto user);
     Optional<LoginUserDto> login(String username, String password);
     Optional<RegisteredUserDto> get(long id);
-    Optional<RegisteredUserDto> update(long id, RegisterUserDto user);
+    Optional<UpdateUserDto> update(long id, UpdateUserDto user);
     void delete(long id);
 }
