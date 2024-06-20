@@ -30,16 +30,23 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskDto createTask(Long identityId, CreateTaskDto taskDto) {
-        Identity identity = identityRepository.findById(identityId).orElseThrow(() -> new EntityNotFoundException("Identity not found"));
+        Identity identity = identityRepository.findById(identityId).orElseThrow(() -> {
+            log.error("Identity not found with id: {}", identityId);
+            return new EntityNotFoundException("Identity not found");
+        });
+
         if (identity.getTasks().size() >= 3) {
+            log.error("Identity with id {} cannot have more than 3 tasks", identityId);
             throw new EntityExistsException("Identity cannot have more than 3 tasks");
         }
+
         try {
             var task = new Task();
             BeanUtils.copyProperties(taskDto, task);
             task.setIdentity(identity);
             taskRepository.save(task);
 
+            log.info("Task created successfully for identityId: {}", identityId);
             return TaskDto.builder()
                     .withId(task.getId())
                     .withTitle(task.getTitle())
@@ -53,25 +60,28 @@ public class TaskServiceImpl implements TaskService {
                     .withIdentityId(task.getIdentity().getId())
                     .build();
         } catch (Exception e) {
-            log.error(String.format("Exception saving task %s", taskDto), e);
+            log.error("Exception saving task {}", taskDto, e);
             throw new PersistEntityException(taskDto);
         }
     }
 
     @Override
     public Optional<TaskDto> getTaskById(Long id) {
-        return taskRepository.findById(id).map(task -> TaskDto.builder()
-                .withId(task.getId())
-                .withTitle(task.getTitle())
-                .withDescription(task.getDescription())
-                .withCue(task.getCue())
-                .withCraving(task.getCraving())
-                .withResponse(task.getResponse())
-                .withReward(task.getReward())
-                .withCompleted(task.isCompleted())
-                .withCreatedAt(task.getCreatedAt())
-                .withIdentityId(task.getIdentity().getId())
-                .build());
+        return taskRepository.findById(id).map(task -> {
+            log.info("Task retrieved successfully with id: {}", id);
+            return TaskDto.builder()
+                    .withId(task.getId())
+                    .withTitle(task.getTitle())
+                    .withDescription(task.getDescription())
+                    .withCue(task.getCue())
+                    .withCraving(task.getCraving())
+                    .withResponse(task.getResponse())
+                    .withReward(task.getReward())
+                    .withCompleted(task.isCompleted())
+                    .withCreatedAt(task.getCreatedAt())
+                    .withIdentityId(task.getIdentity().getId())
+                    .build();
+        });
     }
 
     @Override
@@ -79,6 +89,7 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findById(id).map(task -> {
             BeanUtils.copyProperties(taskDto, task);
             taskRepository.save(task);
+            log.info("Task updated successfully with id: {}", id);
             return TaskDto.builder()
                     .withId(task.getId())
                     .withTitle(task.getTitle())
@@ -97,26 +108,31 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void deleteTask(Long id) {
         if (!taskRepository.existsById(id)) {
+            log.error("Task not found with id: {}", id);
             throw new EntityNotFoundException("Task not found");
         }
         taskRepository.deleteById(id);
+        log.info("Task deleted successfully with id: {}", id);
     }
 
     @Override
     public List<TaskDto> getAllTasksByIdentity(Long identityId) {
         return taskRepository.findAllByIdentityId(identityId).stream()
-                .map(task -> TaskDto.builder()
-                        .withId(task.getId())
-                        .withTitle(task.getTitle())
-                        .withDescription(task.getDescription())
-                        .withCue(task.getCue())
-                        .withCraving(task.getCraving())
-                        .withResponse(task.getResponse())
-                        .withReward(task.getReward())
-                        .withCompleted(task.isCompleted())
-                        .withCreatedAt(task.getCreatedAt())
-                        .withIdentityId(task.getIdentity().getId())
-                        .build())
+                .map(task -> {
+                    log.info("Task retrieved successfully for identityId: {}", identityId);
+                    return TaskDto.builder()
+                            .withId(task.getId())
+                            .withTitle(task.getTitle())
+                            .withDescription(task.getDescription())
+                            .withCue(task.getCue())
+                            .withCraving(task.getCraving())
+                            .withResponse(task.getResponse())
+                            .withReward(task.getReward())
+                            .withCompleted(task.isCompleted())
+                            .withCreatedAt(task.getCreatedAt())
+                            .withIdentityId(task.getIdentity().getId())
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 

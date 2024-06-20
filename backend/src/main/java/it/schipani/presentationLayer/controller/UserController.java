@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @RestController
@@ -70,5 +72,15 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable long id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/avatar")
+    public ResponseEntity<String> uploadAvatar(@PathVariable long id, @RequestParam("avatar") MultipartFile avatar) {
+        try {
+            userService.updateAvatar(id, avatar);
+            return ResponseEntity.ok("Avatar updated successfully");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading avatar: " + e.getMessage());
+        }
     }
 }
