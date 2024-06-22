@@ -15,7 +15,7 @@ import java.util.List;
 public class HabitResetService {
     private final TaskRepository taskRepository;
 
-    @Scheduled(cron = "0 * * * * ?") // Esegui ogni giorno a mezzanotte
+    @Scheduled(cron = "0 0 0 * * ?") // Esegui ogni giorno a mezzanotte
     public void resetHabits() {
         List<Task> tasks = taskRepository.findAll();
         tasks.forEach(task -> {
