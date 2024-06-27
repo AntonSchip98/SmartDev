@@ -14,13 +14,15 @@ export class LoginComponent {
     username: 'schipani99',
     password: 'password',
   };
+
   errorMessage: string | null = null;
+
   constructor(private authSvc: AuthService, private router: Router) {}
 
   signIn() {
     this.authSvc.login(this.loginData).subscribe({
       next: (data) => {
-        this.router.navigate(['dashboard']);
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.errorMessage =

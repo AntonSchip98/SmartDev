@@ -1,0 +1,59 @@
+.card {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card img {
+  border-radius: 9999px;
+}
+
+.card .flex {
+  align-items: center;
+}
+
+.card .text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.card .font-medium {
+  font-weight: 500;
+}
+
+.card .text-gray-900 {
+  color: #1a202c;
+}
+
+.card .text-gray-500 {
+  color: #6b7280;
+}
+
+.card .mt-4 {
+  margin-top: 1rem;
+}
+
+.card .bg-blue-500 {
+  background-color: #3b82f6;
+}
+
+.card .bg-blue-500:hover {
+  background-color: #2563eb;
+}
+
+.card .bg-yellow-500 {
+  background-color: #f59e0b;
+}
+
+.card .bg-yellow-500:hover {
+  background-color: #d97706;
+}
+
+.card .bg-red-500 {
+  background-color: #ef4444;
+}
+
+.card .bg-red-500:hover {
+  background-color: #dc2626;
+}

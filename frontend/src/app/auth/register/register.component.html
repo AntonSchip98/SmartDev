@@ -1,45 +1,56 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-100">
-  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-6 text-gray-800">Register</h2>
-    <form>
+<div
+  class="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+  style="background-image: url('/assets/woods.jpg')"
+>
+  <div class="absolute inset-0 bg-black opacity-50"></div>
+  <div class="relative z-10 w-full max-w-md">
+    <h2 class="text-5xl font-bold mb-6 text-white text-center">SmartDev</h2>
+    <form (ngSubmit)="signUp()">
       <div class="mb-4">
-        <label class="block text-gray-700">Username</label>
+        <label class="block text-gray-300 text-lg font-bold">Username</label>
         <input
           type="text"
           name="username"
           [(ngModel)]="registerData.username"
-          class="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-indigo-500"
+          class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-90 text-black text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 transition transform hover:scale-105 hover:bg-white hover:border-green-500"
           placeholder="username"
         />
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700">Email</label>
+        <label class="block text-gray-300 text-lg font-bold">Email</label>
         <input
           type="email"
           name="email"
           [(ngModel)]="registerData.email"
-          class="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-indigo-500"
+          class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-90 text-black text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 transition transform hover:scale-105 hover:bg-white hover:border-green-500"
           placeholder="email"
         />
       </div>
       <div class="mb-6">
-        <label class="block text-gray-700">Password</label>
+        <label class="block text-gray-300 text-lg font-bold">Password</label>
         <input
           type="password"
           name="password"
           [(ngModel)]="registerData.password"
-          class="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-indigo-500"
+          class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-90 text-black text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 transition transform hover:scale-105 hover:bg-white hover:border-green-500"
           placeholder="password"
         />
       </div>
+      <div *ngIf="errorMessage" class="text-red-500 mb-4 text-lg">
+        {{ errorMessage }}
+      </div>
       <div class="flex items-center justify-between">
         <button
-          (click)="signUp()"
-          class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600"
+          type="submit"
+          class="w-full py-3 border-2 border-white rounded-lg text-white text-lg font-bold hover:bg-white hover:text-black hover:border-green-500 transition"
         >
           Register
         </button>
-        <a href="/login" class="text-indigo-500 hover:underline">Login</a>
+      </div>
+      <div class="text-center mt-4 text-white text-lg">
+        <a routerLink="/auth/login" class="hover:underline"
+          >Already have an account? Log In</a
+        >
       </div>
     </form>
   </div>
