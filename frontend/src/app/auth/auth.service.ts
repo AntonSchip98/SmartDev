@@ -109,6 +109,10 @@ export class AuthService {
     return this.user$.pipe(map((user) => (user ? user.id : undefined)));
   }
 
+  get currentUser(): IUser | null {
+    return this.authSubject.value;
+  }
+
   errors(err: any) {
     switch (err.error) {
       case 'Email and Password are required':

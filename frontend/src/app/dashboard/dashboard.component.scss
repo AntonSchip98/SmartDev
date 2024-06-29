@@ -1,59 +1,87 @@
-.card {
-  background-color: #ffffff;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.dashboard-container {
+  display: flex;
 }
 
-.card img {
-  border-radius: 9999px;
-}
+.dashboard {
+  margin-left: 0;
+  margin-top: 64px; /* Adjust according to the navbar height */
+  padding: 1rem;
+  flex: 1;
 
-.card .flex {
-  align-items: center;
-}
+  @media (min-width: 768px) {
+    margin-left: 250px; /* Adjust according to the sidebar width */
+    padding: 2rem;
+  }
 
-.card .text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
+  h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
 
-.card .font-medium {
-  font-weight: 500;
-}
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
 
-.card .text-gray-900 {
-  color: #1a202c;
-}
+  .task {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e5e5;
 
-.card .text-gray-500 {
-  color: #6b7280;
-}
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 
-.card .mt-4 {
-  margin-top: 1rem;
-}
+  .task input[type="checkbox"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #db4c3f;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    margin-right: 0.75rem;
+    position: relative;
+  }
 
-.card .bg-blue-500 {
-  background-color: #3b82f6;
-}
+  .task input[type="checkbox"]:checked::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #db4c3f;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
-.card .bg-blue-500:hover {
-  background-color: #2563eb;
-}
+  .task span {
+    font-size: 0.875rem; /* 14px */
+  }
 
-.card .bg-yellow-500 {
-  background-color: #f59e0b;
-}
+  .task .text-green-600 {
+    color: #059669; /* Tailwind's green-600 */
+  }
 
-.card .bg-yellow-500:hover {
-  background-color: #d97706;
-}
+  .task .text-gray-500 {
+    color: #6b7280; /* Tailwind's gray-500 */
+  }
 
-.card .bg-red-500 {
-  background-color: #ef4444;
-}
+  .add-task {
+    font-size: 0.875rem; /* 14px */
+    color: #db4c3f;
+    margin-top: 0.5rem;
+    cursor: pointer;
 
-.card .bg-red-500:hover {
-  background-color: #dc2626;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }

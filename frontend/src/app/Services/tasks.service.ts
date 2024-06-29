@@ -86,4 +86,7 @@ export class TasksService {
       })
     );
   }
+  getTasksByIdentityId(identityId: number): Observable<ITask[]> {
+    return this.http.get<ITask[]>(`${this.apiUrl}/identity/${identityId}`);
+  }
 }

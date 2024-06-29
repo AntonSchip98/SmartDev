@@ -7,6 +7,7 @@ import { TasksService } from '../Services/tasks.service';
 import { switchMap } from 'rxjs';
 import { ITask } from '../Models/i-task';
 import { IUpdateTaskRequest } from '../Models/iupdate-task-request';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,23 +15,31 @@ import { IUpdateTaskRequest } from '../Models/iupdate-task-request';
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {
-  identities: Partial<IIdentity>[] = [
-    { title: '', description: '' },
-    { title: '', description: '' },
-    { title: '', description: '' },
-  ];
-  tasks: (ITask & { created: boolean })[][] = [[], [], []];
+  identities: Partial<IIdentity>[] = [];
+  tasks: (ITask & { created: boolean })[][] = [];
   identities$ = this.identityService.identities$;
   userId: number | undefined;
-  selectedIdentityId: number | undefined;
+  selectedIdentityIndex: number | undefined;
   editingIndex: number | undefined;
-  menuOpen: boolean[] = [false, false, false];
+  menuOpen: boolean[] = [];
+  isAddTaskModalOpen: boolean = false;
+  addTaskForm: FormGroup;
 
   constructor(
+    private fb: FormBuilder,
     private identityService: IdentitiesService,
     private authService: AuthService,
     private tasksService: TasksService
-  ) {}
+  ) {
+    this.addTaskForm = this.fb.group({
+      title: ['', Validators.required],
+      description: ['', Validators.required],
+      cue: ['', Validators.required],
+      craving: ['', Validators.required],
+      response: ['', Validators.required],
+      reward: ['', Validators.required],
+    });
+  }
 
   ngOnInit(): void {
     this.authService.getUserId().subscribe(
@@ -48,7 +57,6 @@ export class DashboardComponent implements OnInit {
       }
     );
 
-    // Aggiorna le task periodicamente per riflettere i cambiamenti dal backend
     setInterval(() => {
       const current = new Date();
       if (current.getHours() !== 0 || current.getMinutes() !== 0) {
@@ -63,28 +71,22 @@ export class DashboardComponent implements OnInit {
           }
         });
       }
-    }, 40000); // Esegui ogni minuto
+    }, 40000);
   }
 
   populateIdentities(identities: IIdentity[]): void {
-    this.identities = [
-      { title: '', description: '' },
-      { title: '', description: '' },
-      { title: '', description: '' },
-    ];
-
-    identities.forEach((identity, index) => {
-      if (index < 3) {
-        this.identities[index] = identity;
-        this.tasksService.loadTasksByIdentity(identity.id!);
-        this.tasksService.tasks$.subscribe((tasks) => {
-          if (tasks) {
+    this.identities = identities.slice(0, 3);
+    this.identities.forEach((identity, index) => {
+      if (identity.id) {
+        this.tasks[index] = [];
+        this.tasksService
+          .getTasksByIdentityId(identity.id)
+          .subscribe((tasks) => {
             this.tasks[index] = tasks.map((task) => ({
               ...task,
               created: true,
             }));
-          }
-        });
+          });
       }
     });
   }
@@ -104,7 +106,7 @@ export class DashboardComponent implements OnInit {
           (response) => {
             console.log('Identity updated successfully', response);
             this.identities[index] = response;
-            this.selectedIdentityId = undefined;
+            this.selectedIdentityIndex = undefined;
             this.editingIndex = undefined;
           },
           (error) => {
@@ -118,12 +120,16 @@ export class DashboardComponent implements OnInit {
           this.identities[index] = response;
           this.tasks[index] = [
             {
+              id: 0,
               title: '',
               description: '',
               cue: '',
               craving: '',
               response: '',
               reward: '',
+              completed: false,
+              createdAt: new Date(),
+              identityId: response.id,
               created: false,
             },
           ];
@@ -135,21 +141,24 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  addTaskForm(identityIndex: number): void {
-    this.tasks[identityIndex].push({
-      title: '',
-      description: '',
-      cue: '',
-      craving: '',
-      response: '',
-      reward: '',
-      created: false,
-    });
+  openAddTaskModal(index: number): void {
+    this.selectedIdentityIndex = index;
+    this.isAddTaskModalOpen = true;
   }
 
-  onSubmitTask(identityIndex: number, taskIndex: number): void {
-    const identity = this.identities[identityIndex];
-    const taskData = this.tasks[identityIndex][taskIndex];
+  closeAddTaskModal(): void {
+    this.isAddTaskModalOpen = false;
+    this.addTaskForm.reset();
+  }
+
+  onSubmitTask(): void {
+    if (this.selectedIdentityIndex === undefined) {
+      console.error('Selected identity index is not defined');
+      return;
+    }
+
+    const identity = this.identities[this.selectedIdentityIndex];
+    const taskData = this.addTaskForm.value;
 
     if (!identity.id) {
       console.error('Identity ID is not defined');
@@ -168,12 +177,16 @@ export class DashboardComponent implements OnInit {
     this.tasksService.createTask(identity.id, createTaskRequest).subscribe(
       (response) => {
         console.log('Task created successfully', response);
-        this.tasks[identityIndex][taskIndex] = { ...response, created: true };
+        this.tasks[this.selectedIdentityIndex!].push({
+          ...response,
+          created: true,
+        });
       },
       (error) => {
         console.error('Error creating task', error);
       }
     );
+    this.closeAddTaskModal();
   }
 
   toggleCompleteTask(identityIndex: number, taskIndex: number): void {
@@ -192,14 +205,14 @@ export class DashboardComponent implements OnInit {
   editIdentity(index: number): void {
     this.editingIndex = index;
     const identity = this.identities[index];
-    this.selectedIdentityId = identity.id;
+    this.selectedIdentityIndex = index;
   }
 
   deleteIdentity(id: number): void {
     this.identityService.deleteIdentity(id).subscribe(
       () => {
         console.log('Identity deleted successfully');
-        this.ngOnInit(); // Ricarica le identità dopo l'eliminazione
+        this.ngOnInit();
       },
       (error) => {
         console.error('Error deleting identity', error);

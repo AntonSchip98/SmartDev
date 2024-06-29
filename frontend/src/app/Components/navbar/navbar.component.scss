@@ -1,0 +1,31 @@
+/* navbar.component.scss */
+.navbar-toggle-button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  background-color: #ffffff;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-toggle-button:hover {
+  background-color: #f1f1f1;
+}
+
+.navbar-container {
+  position: relative;
+  z-index: 10;
+}
+
+.sidebar {
+  z-index: 50;
+}
+
+/* Optional: add transition for smoother toggle */
+.navbar-toggle-button {
+  transition: background-color 0.3s ease;
+}
