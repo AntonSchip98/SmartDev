@@ -1,0 +1,18 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss/base";
+@import "tailwindcss/utilities";
+@import "tailwindcss/components";
+
+.ml-64 {
+  margin-left: 16rem;
+}
+
+.w-0 {
+  width: 0;
+}
+
+@media (max-width: 768px) {
+  .ml-64 {
+    margin-left: 0;
+  }
+}

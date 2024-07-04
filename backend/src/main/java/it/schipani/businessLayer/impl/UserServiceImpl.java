@@ -138,6 +138,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UpdateUserDto> update(long id, UpdateUserDto userDto) {
         try {
+            System.out.println("---------------------------------------------------");
+            System.out.println(userDto);
             User existingUser = usersRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
             if (!existingUser.getUsername().equals(userDto.getUsername()) && usersRepository.existsByUsername(userDto.getUsername())) {
                 log.warn("Attempted to update to existing username: {}", userDto.getUsername());
@@ -162,9 +164,11 @@ public class UserServiceImpl implements UserService {
             String newToken = jwt.generateToken(authentication);
 
             var dto = UpdateUserDto.builder()
+                    .withId(id)
                     .withUsername(existingUser.getUsername())
                     .withEmail(existingUser.getEmail())
                     .withAvatar(existingUser.getAvatar())
+                    .withPassword((existingUser.getPassword()))
                     .withToken(newToken)
                     .build();
 
@@ -206,4 +210,6 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
     }
+
+
 }

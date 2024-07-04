@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 @Builder(setterPrefix = "with")
 @AllArgsConstructor
 public class UpdateUserDto extends DtoBase {
+    private long id;
     private String username;
     private String email;
     private String avatar;

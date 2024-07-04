@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth.service';
-import { IUser } from '../../Models/i-user';
 import { Router } from '@angular/router';
+import { IUser } from '../../Models/iuser';
+import { IRegisterData } from '../../Models/iregister-data';
 
 @Component({
   selector: 'app-register',
@@ -9,19 +10,17 @@ import { Router } from '@angular/router';
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
-  registerData: Partial<IUser> = {};
-  errorMessage: string | null = null;
+  registerData: IRegisterData = {
+    username: 'schipani99',
+    email: 'schipani99@gmail.com',
+    password: 'password',
+  };
 
   constructor(private authSvc: AuthService, private router: Router) {}
 
   signUp() {
-    this.authSvc.register(this.registerData).subscribe({
-      next: (data) => {
-        this.router.navigate(['/dashboard']);
-      },
-      error: (err) => {
-        this.errorMessage = 'Registration failed. Please try again.';
-      },
+    this.authSvc.register(this.registerData).subscribe((data) => {
+      this.router.navigate(['/dashboard']);
     });
   }
 }

@@ -56,6 +56,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UpdateUserDto> updateUser(@PathVariable long id, @RequestBody UpdateUserRequest userRequest) {
         var updateUserDto = UpdateUserDto.builder()
+                .withId(id)
                 .withUsername(userRequest.username())
                 .withEmail(userRequest.email())
                 .withAvatar(userRequest.avatar())

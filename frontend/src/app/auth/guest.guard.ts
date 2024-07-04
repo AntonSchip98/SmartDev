@@ -1,21 +1,21 @@
 import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
+  CanActivate,
+  CanActivateChild,
   GuardResult,
   MaybeAsync,
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
 import { AuthService } from './auth.service';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GuestGuard {
-  constructor(
-    private authSvc: AuthService,
-    private router: Router //per i redirect
-  ) {}
+  constructor(private authSvc: AuthService, private router: Router) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -24,9 +24,9 @@ export class GuestGuard {
     if (this.authSvc.syncIsLoggedIn) {
       this.router.navigate(['/dashboard']);
     }
-
     return !this.authSvc.syncIsLoggedIn;
   }
+
   canActivateChild(
     childRoute: ActivatedRouteSnapshot,
     state: RouterStateSnapshot

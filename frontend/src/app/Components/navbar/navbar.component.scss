@@ -1,31 +1,54 @@
-/* navbar.component.scss */
-.navbar-toggle-button {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 100;
-  background-color: #ffffff;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+@import "tailwindcss/utilities";
+
+.navbar-container {
+  @apply fixed top-0 left-0 h-full z-50;
 }
 
-.navbar-toggle-button:hover {
-  background-color: #f1f1f1;
+.sidebar {
+  @apply bg-gray-100 h-full p-4 w-64 fixed top-0 left-0 transition-transform duration-200 ease-in-out z-50;
+}
+
+.profile {
+  @apply flex items-center justify-between mb-6;
+}
+
+.add-task-button {
+  @apply flex items-center bg-red-500 text-white p-2 rounded mb-6 hover:bg-red-600;
+}
+
+.menu-item a {
+  @apply flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded;
+}
+
+.projects {
+  @apply mt-6;
+}
+
+.logout-button {
+  @apply flex items-center bg-red-500 text-white p-2 rounded mt-6 hover:bg-red-600;
+}
+
+.navbar-toggle-button {
+  position: relative;
+  top: 1rem;
+  left: 1rem;
+  z-index: 0;
 }
 
 .navbar-container {
   position: relative;
-  z-index: 10;
 }
 
 .sidebar {
-  z-index: 50;
+  border-radius: 0 1rem 1rem 0;
+  left: 2px; /* Spazio dal margine sinistro della pagina */
 }
 
-/* Optional: add transition for smoother toggle */
-.navbar-toggle-button {
-  transition: background-color 0.3s ease;
+.profile img {
+  border-radius: 50%;
+}
+
+.add-task-button,
+.logout-button {
+  border-radius: 0.5rem;
 }

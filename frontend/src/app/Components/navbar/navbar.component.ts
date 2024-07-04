@@ -1,8 +1,16 @@
-import { Component, HostListener } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { AuthService } from '../../auth/auth.service';
-import { IIdentity } from '../../Models/i-identity';
-import { IdentitiesService } from '../../Services/identities.service';
+import { IUser } from '../../Models/iuser';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { IdentityService } from '../../Services/identity.service';
+import { CreateIdentityDto } from '../../Models/identityModel/create-identity-dto';
+import { UserService } from '../../Services/comunication.service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,17 +19,19 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 })
 export class NavbarComponent {
   isUserLoggedIn: boolean = false;
-  isUserRegistered: boolean = false;
-  showDropdown = false;
-  isMobileMenuOpen = false;
-  isNavbarOpen = false;
-  isAddIdentityModalOpen = false;
+  isNavbarOpen: boolean = false;
+  user: IUser | null | undefined;
+  userImg: string = '';
+  isAddIdentityModalOpen: boolean = false;
   addIdentityForm: FormGroup;
+
+  @Output() navbarToggled = new EventEmitter<boolean>();
 
   constructor(
     private authSvc: AuthService,
-    private identitiesService: IdentitiesService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private identityService: IdentityService,
+    private communicationService: UserService
   ) {
     this.addIdentityForm = this.fb.group({
       title: ['', Validators.required],
@@ -31,25 +41,37 @@ export class NavbarComponent {
 
   ngOnInit() {
     this.authSvc.isLoggedIn$.subscribe((data) => {
+      console.log("L'utente è loggato? " + data.valueOf());
       this.isUserLoggedIn = data;
+      if (!data) {
+        this.isNavbarOpen = false;
+        this.navbarToggled.emit(this.isNavbarOpen);
+      } else {
+        this.isNavbarOpen = true;
+        this.navbarToggled.emit(this.isNavbarOpen);
+      }
     });
+
+    this.authSvc.user$.subscribe((data) => {
+      this.user = data;
+      if (data) {
+        this.authSvc.getUserData(this.user!.id).subscribe((data) => {
+          console.log(data?.avatar);
+          this.userImg = data?.avatar || 'https://via.placeholder.com/40';
+        });
+      }
+    });
+  }
+
+  toggleNavbar() {
+    this.isNavbarOpen = !this.isNavbarOpen;
+    this.navbarToggled.emit(this.isNavbarOpen);
   }
 
   logout() {
     this.authSvc.logout();
-  }
-
-  toggleDropdown() {
-    this.showDropdown = !this.showDropdown;
-  }
-
-  toggleMobileMenu() {
-    this.isMobileMenuOpen = !this.isMobileMenuOpen;
-  }
-
-  toggleNavbar(event: Event) {
-    event.stopPropagation(); // Prevenire la propagazione del click
-    this.isNavbarOpen = !this.isNavbarOpen;
+    this.isNavbarOpen = false;
+    this.navbarToggled.emit(this.isNavbarOpen);
   }
 
   openAddIdentityModal() {
@@ -59,39 +81,26 @@ export class NavbarComponent {
 
   closeAddIdentityModal() {
     this.isAddIdentityModalOpen = false;
+    this.addIdentityForm.reset();
   }
 
   onSubmit() {
     if (this.addIdentityForm.valid) {
-      const identityData: Partial<IIdentity> = {
+      const identityData: CreateIdentityDto = {
         title: this.addIdentityForm.get('title')?.value,
         description: this.addIdentityForm.get('description')?.value,
       };
 
-      const userId = this.authSvc.currentUser?.id;
-      if (userId) {
-        this.identitiesService
-          .createIdentity(userId, identityData)
-          .subscribe(() => {
-            this.closeAddIdentityModal();
-            this.closeNavbarOnMobile();
-          });
-      }
-    }
-  }
-
-  @HostListener('window:click', ['$event'])
-  onScreenClick(event: Event) {
-    if (this.isNavbarOpen && window.innerWidth < 768) {
-      this.isNavbarOpen = false;
+      this.identityService
+        .createIdentity(this.user?.id!, identityData)
+        .subscribe(() => {
+          this.closeAddIdentityModal();
+          this.communicationService.announceIdentityAdded(); // Announce the identity added event
+        });
     }
   }
 
   preventSidebarClose(event: Event) {
-    event.stopPropagation();
-  }
-
-  preventModalClose(event: Event) {
     event.stopPropagation();
   }
 

@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
-import { ILoginData } from '../../Models/i-login-data';
-import { IUser } from '../../Models/i-user';
+import { ILoginData } from '../../Models/ilogin-data';
 
 @Component({
   selector: 'app-login',
@@ -15,18 +14,17 @@ export class LoginComponent {
     password: 'password',
   };
 
-  errorMessage: string | null = null;
-
   constructor(private authSvc: AuthService, private router: Router) {}
 
   signIn() {
     this.authSvc.login(this.loginData).subscribe({
       next: (data) => {
+        console.log('Navigating to dashboard with data:', data); // Aggiungi questo log
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        this.errorMessage =
-          'Login failed: ' + (err.error.message || err.message);
+        console.error('Login failed', err);
+        // Gestisci l'errore di login, ad esempio mostrando un messaggio all'utente
       },
     });
   }

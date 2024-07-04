@@ -4,6 +4,7 @@ import it.schipani.businessLayer.dto.UserDto.LoginUserDto;
 import it.schipani.businessLayer.dto.UserDto.RegisterUserDto;
 import it.schipani.businessLayer.dto.UserDto.RegisteredUserDto;
 import it.schipani.businessLayer.dto.UserDto.UpdateUserDto;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -17,4 +18,6 @@ public interface UserService {
     void delete(long id);
 
     void updateAvatar(long id, MultipartFile avatar) throws IOException;
+
+
 }

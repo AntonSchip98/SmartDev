@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
-import { AuthService } from './auth.service';
 import {
-  HttpEvent,
-  HttpHandler,
-  HttpInterceptor,
   HttpRequest,
+  HttpHandler,
+  HttpEvent,
+  HttpInterceptor,
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable()
+//L'obiettivo dell'interceptor è aggiungere il token JWT alle intestazioni delle richieste HTTP in
+// modo che l'utente autenticato possa accedere alle risorse protette.
 export class AuthInterceptor implements HttpInterceptor {
   constructor(private authSvc: AuthService) {}
 
@@ -18,10 +20,13 @@ export class AuthInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<unknown>> {
     const accessToken = this.authSvc.getAccessToken();
 
-    const newRequest = request.clone({
-      headers: request.headers.append('Authorization', 'Bearer ' + accessToken),
-    });
-
-    return next.handle(newRequest);
+    if (accessToken) {
+      const newRequest = request.clone({
+        headers: request.headers.set('Authorization', 'Bearer ' + accessToken),
+      });
+      return next.handle(newRequest);
+    } else {
+      return next.handle(request);
+    }
   }
 }

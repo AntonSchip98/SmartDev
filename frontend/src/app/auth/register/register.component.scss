@@ -1,0 +1,29 @@
+@import "tailwindcss/utilities";
+
+h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+form {
+  margin-bottom: 1rem;
+}
+
+button {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+:focus {
+  outline: none;
+}
+
+.focus\:shadow-outline {
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}

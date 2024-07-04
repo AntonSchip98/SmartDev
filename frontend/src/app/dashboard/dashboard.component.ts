@@ -1,35 +1,30 @@
-import { Component, OnInit } from '@angular/core';
-import { IdentitiesService } from '../Services/identities.service';
-import { AuthService } from '../auth/auth.service';
-import { IIdentity } from '../Models/i-identity';
-import { ICreateTaskRequest } from '../Models/icreate-task-request';
-import { TasksService } from '../Services/tasks.service';
-import { switchMap } from 'rxjs';
-import { ITask } from '../Models/i-task';
-import { IUpdateTaskRequest } from '../Models/iupdate-task-request';
+import { Component } from '@angular/core';
+import { IdentityDto } from '../Models/identityModel/identity-dto';
+import { TaskDto } from '../Models/taskModel/task-dto';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { IdentityService } from '../Services/identity.service';
+import { AuthService } from '../auth/auth.service';
+import { TaskService } from '../Services/task.service';
+import { UserService } from '../Services/comunication.service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit {
-  identities: Partial<IIdentity>[] = [];
-  tasks: (ITask & { created: boolean })[][] = [];
-  identities$ = this.identityService.identities$;
-  userId: number | undefined;
-  selectedIdentityIndex: number | undefined;
-  editingIndex: number | undefined;
-  menuOpen: boolean[] = [];
+export class DashboardComponent {
+  identities: IdentityDto[] = [];
+  tasks: TaskDto[][] = [];
   isAddTaskModalOpen: boolean = false;
   addTaskForm: FormGroup;
+  selectedIdentityIndex: number | null = null;
 
   constructor(
-    private fb: FormBuilder,
-    private identityService: IdentitiesService,
+    private identityService: IdentityService,
+    private taskService: TaskService,
     private authService: AuthService,
-    private tasksService: TasksService
+    private communicationService: UserService,
+    private fb: FormBuilder
   ) {
     this.addTaskForm = this.fb.group({
       title: ['', Validators.required],
@@ -42,20 +37,11 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.authService.getUserId().subscribe(
-      (id) => {
-        this.userId = id;
-        this.identityService.loadIdentities();
-        this.identityService.identities$.subscribe((identities) => {
-          if (identities) {
-            this.populateIdentities(identities);
-          }
-        });
-      },
-      (error) => {
-        console.error('Error getting user ID', error);
-      }
-    );
+    this.loadIdentities();
+
+    this.communicationService.identityAdded$.subscribe(() => {
+      this.loadIdentities(); // Reload identities when a new one is added
+    });
 
     setInterval(() => {
       const current = new Date();
@@ -67,160 +53,62 @@ export class DashboardComponent implements OnInit {
       if (this.identities && this.identities.length > 0) {
         this.identities.forEach((identity, index) => {
           if (identity.id) {
-            this.tasksService.loadTasksByIdentity(identity.id);
+            this.taskService.getAllTasksByIdentity(identity.id);
           }
         });
       }
     }, 40000);
   }
 
-  populateIdentities(identities: IIdentity[]): void {
-    this.identities = identities.slice(0, 3);
-    this.identities.forEach((identity, index) => {
-      if (identity.id) {
-        this.tasks[index] = [];
-        this.tasksService
-          .getTasksByIdentityId(identity.id)
-          .subscribe((tasks) => {
-            this.tasks[index] = tasks.map((task) => ({
-              ...task,
-              created: true,
-            }));
-          });
-      }
+  loadIdentities(): void {
+    this.identityService.getAllIdentitiesByUser().subscribe((identities) => {
+      this.identities = identities;
+      this.loadTasks();
     });
   }
 
-  onSubmitIdentity(index: number): void {
-    if (!this.userId) {
-      console.error('User ID is not defined');
-      return;
-    }
-
-    const identityData = this.identities[index];
-
-    if (identityData.id) {
-      this.identityService
-        .updateIdentity(identityData.id, identityData)
-        .subscribe(
-          (response) => {
-            console.log('Identity updated successfully', response);
-            this.identities[index] = response;
-            this.selectedIdentityIndex = undefined;
-            this.editingIndex = undefined;
-          },
-          (error) => {
-            console.error('Error updating identity', error);
-          }
-        );
-    } else {
-      this.identityService.createIdentity(this.userId, identityData).subscribe(
-        (response) => {
-          console.log('Identity created successfully', response);
-          this.identities[index] = response;
-          this.tasks[index] = [
-            {
-              id: 0,
-              title: '',
-              description: '',
-              cue: '',
-              craving: '',
-              response: '',
-              reward: '',
-              completed: false,
-              createdAt: new Date(),
-              identityId: response.id,
-              created: false,
-            },
-          ];
-        },
-        (error) => {
-          console.error('Error creating identity', error);
-        }
-      );
-    }
+  loadTasks(): void {
+    this.tasks = [];
+    this.identities.forEach((identity, index) => {
+      this.taskService.getAllTasksByIdentity(identity.id).subscribe((tasks) => {
+        this.tasks[index] = tasks;
+      });
+    });
   }
 
-  openAddTaskModal(index: number): void {
-    this.selectedIdentityIndex = index;
+  toggleCompleteTask(identityIndex: number, taskIndex: number): void {
+    const task = this.tasks[identityIndex][taskIndex];
+    task.completed = !task.completed;
+    this.taskService.updateTask(task.id, task).subscribe(() => {
+      // Update the task list if necessary
+    });
+  }
+
+  openAddTaskModal(identityIndex: number): void {
     this.isAddTaskModalOpen = true;
+    this.selectedIdentityIndex = identityIndex;
   }
 
   closeAddTaskModal(): void {
     this.isAddTaskModalOpen = false;
     this.addTaskForm.reset();
+    this.selectedIdentityIndex = null;
   }
 
   onSubmitTask(): void {
-    if (this.selectedIdentityIndex === undefined) {
-      console.error('Selected identity index is not defined');
-      return;
+    if (this.addTaskForm.valid && this.selectedIdentityIndex !== null) {
+      const identityId = this.identities[this.selectedIdentityIndex].id;
+      const taskData: TaskDto = {
+        ...this.addTaskForm.value,
+        identityId,
+        completed: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      this.taskService.createTask(identityId, taskData).subscribe(() => {
+        this.closeAddTaskModal();
+        this.loadTasks(); // Reload tasks after adding a new one
+      });
     }
-
-    const identity = this.identities[this.selectedIdentityIndex];
-    const taskData = this.addTaskForm.value;
-
-    if (!identity.id) {
-      console.error('Identity ID is not defined');
-      return;
-    }
-
-    const createTaskRequest: ICreateTaskRequest = {
-      title: taskData.title,
-      description: taskData.description,
-      cue: taskData.cue,
-      craving: taskData.craving,
-      response: taskData.response,
-      reward: taskData.reward,
-    };
-
-    this.tasksService.createTask(identity.id, createTaskRequest).subscribe(
-      (response) => {
-        console.log('Task created successfully', response);
-        this.tasks[this.selectedIdentityIndex!].push({
-          ...response,
-          created: true,
-        });
-      },
-      (error) => {
-        console.error('Error creating task', error);
-      }
-    );
-    this.closeAddTaskModal();
-  }
-
-  toggleCompleteTask(identityIndex: number, taskIndex: number): void {
-    const task = this.tasks[identityIndex][taskIndex];
-    this.tasksService.completeTask(task.id!).subscribe(
-      (response) => {
-        console.log('Task completion toggled successfully', response);
-        this.tasks[identityIndex][taskIndex] = { ...response, created: true };
-      },
-      (error) => {
-        console.error('Error toggling task completion', error);
-      }
-    );
-  }
-
-  editIdentity(index: number): void {
-    this.editingIndex = index;
-    const identity = this.identities[index];
-    this.selectedIdentityIndex = index;
-  }
-
-  deleteIdentity(id: number): void {
-    this.identityService.deleteIdentity(id).subscribe(
-      () => {
-        console.log('Identity deleted successfully');
-        this.ngOnInit();
-      },
-      (error) => {
-        console.error('Error deleting identity', error);
-      }
-    );
-  }
-
-  toggleMenu(index: number): void {
-    this.menuOpen[index] = !this.menuOpen[index];
   }
 }

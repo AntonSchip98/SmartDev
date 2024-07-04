@@ -1,4 +1,6 @@
-<app-navbar></app-navbar>
-<div class="mx-auto">
-  <router-outlet></router-outlet>
+<div class="flex h-screen">
+  <app-navbar (navbarToggled)="onNavbarToggled($event)"></app-navbar>
+  <div class="flex-1 p-6 overflow-auto" [class.ml-64]="isNavbarOpen">
+    <router-outlet></router-outlet>
+  </div>
 </div>
