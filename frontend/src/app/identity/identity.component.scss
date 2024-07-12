@@ -71,98 +71,74 @@
   }
 }
 
-// Stili specifici per la navbar
-.navbar-container {
-  @apply fixed top-0 left-0 h-full z-50;
-}
+// Stili specifici per il componente
+.identity {
+  margin-top: 4rem;
+  padding: 1rem;
 
-.sidebar {
-  @apply bg-gray-100 h-full p-4 w-64 fixed top-0 left-0 transition-transform duration-200 ease-in-out z-50;
-}
-
-.profile {
-  @apply flex items-center justify-between mb-6;
-}
-
-.add-task-button {
-  @apply flex items-center bg-red-500 text-white p-2 rounded mb-6 hover:bg-red-600;
-}
-
-.menu-item a {
-  @apply flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded;
-}
-
-.projects {
-  @apply mt-6;
-}
-
-.logout-button {
-  @apply flex items-center bg-red-500 text-white p-2 rounded mt-6 hover:bg-red-600;
-}
-
-.navbar-toggle-button {
-  position: relative;
-  top: 1rem;
-  left: 1rem;
-  z-index: 0;
-}
-
-.navbar-container {
-  position: relative;
-}
-
-.sidebar {
-  border-radius: 0 1rem 1rem 0;
-  left: 2px; /* Spazio dal margine sinistro della pagina */
-}
-
-.profile img {
-  border-radius: 50%;
-}
-
-.add-task-button,
-.logout-button {
-  border-radius: 0.5rem;
-}
-
-.help-list {
-  list-style-type: disc;
-  margin-left: 1rem;
-}
-
-// Stili per il modale della navbar
-.modal-container {
-  @apply fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50;
-}
-
-.modal-content {
-  @apply bg-white p-8 rounded-lg shadow-lg w-full max-w-lg;
-}
-
-.modal-header {
-  @apply text-2xl font-bold mb-4;
-}
-
-.modal-body {
-  @apply mb-4;
-}
-
-.modal-footer {
-  @apply flex justify-end;
-
-  button {
-    @apply mr-4 py-2 px-4 border border-gray-300 rounded-md shadow-sm;
-
-    &:last-child {
-      @apply bg-blue-500 text-white;
-    }
+  h1 span {
+    @apply capitalize;
   }
 }
 
-.modal-button-cancel {
-  @apply bg-white text-gray-700;
+.custom-checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #db4c3f;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  margin-right: 0.75rem;
+  position: relative;
+
+  &:checked::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #db4c3f;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
-.modal-button {
-  @apply bg-blue-500 text-white;
+.task {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+  }
+
+  h3 {
+    font-size: 1.25rem; /* 20px */
+    font-weight: 600;
+  }
+
+  .text-gray-500 {
+    color: #6b7280;
+  }
+
+  .text-gray-800 {
+    color: #1f2937;
+  }
+
+  .text-gray-600 {
+    color: #4b5563;
+  }
+}
+
+p {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+  color: #4b5563; /* Tailwind gray-600 */
 }

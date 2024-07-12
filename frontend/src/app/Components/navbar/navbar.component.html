@@ -12,9 +12,11 @@
         <img
           [src]="userImg"
           alt="Profile"
-          class="w-10 h-10 rounded-full mr-3"
+          class="w-20 h-20 rounded-full mr-3"
         />
-        <span class="font-semibold text-gray-800">{{ user?.username }}</span>
+        <span class="text-lg font-semibold text-gray-800">{{
+          user?.username
+        }}</span>
       </div>
       <button (click)="toggleNavbar()" class="material-icons">close</button>
     </div>
@@ -28,6 +30,7 @@
     <ul class="menu">
       <li class="menu-item mb-3">
         <a
+          (click)="closeNavbarOnMobile()"
           routerLink="/dashboard"
           class="flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded"
         >
@@ -37,6 +40,7 @@
       </li>
       <li class="menu-item mb-3">
         <a
+          (click)="closeNavbarOnMobile()"
           routerLink="/account"
           class="flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded"
         >
@@ -44,56 +48,17 @@
           <span class="ml-3">Account</span>
         </a>
       </li>
-      <li class="menu-item mb-3">
-        <a
-          href="#"
-          class="flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded"
-        >
-          <span class="material-icons">calendar_today</span>
-          <span class="ml-3">Prossime</span>
-        </a>
-      </li>
-      <li class="menu-item mb-3">
-        <a
-          href="#"
-          class="flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded"
-        >
-          <span class="material-icons">label</span>
-          <span class="ml-3">Filtri ed etichette</span>
-        </a>
-      </li>
     </ul>
     <div class="projects mt-6">
       <h3 class="font-semibold text-gray-600 mb-2">I miei progetti</h3>
       <ul>
-        <li class="project-item mb-3">
+        <li *ngFor="let identity of identities" class="project-item mb-3">
           <a
-            href="#"
-            class="flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded"
+            (click)="navigateToIdentity(identity.id)"
+            class="flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded cursor-pointer capitalize"
           >
-            <span class="w-3 h-3 bg-blue-500 rounded-full mr-3"></span>
-            <span>Casa</span>
-            <span class="ml-auto text-sm text-gray-500">5</span>
-          </a>
-        </li>
-        <li class="project-item mb-3">
-          <a
-            href="#"
-            class="flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded"
-          >
-            <span class="w-3 h-3 bg-red-500 rounded-full mr-3"></span>
-            <span>Lavoro</span>
-            <span class="ml-auto text-sm text-gray-500">6</span>
-          </a>
-        </li>
-        <li class="project-item mb-3">
-          <a
-            href="#"
-            class="flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded"
-          >
-            <span class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
-            <span>Istruzione</span>
-            <span class="ml-auto text-sm text-gray-500">4</span>
+            <span class="w-3 h-3 bg-green-500 rounded-full mr-3"></span>
+            <span>{{ identity.title }}</span>
           </a>
         </li>
       </ul>
@@ -109,49 +74,102 @@
 </div>
 
 <!-- Modale per aggiungere identità -->
-<div
-  *ngIf="isAddIdentityModalOpen"
-  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
->
-  <div class="bg-white p-8 rounded shadow-lg w-full max-w-lg">
-    <h2 class="text-2xl font-bold mb-4">Aggiungi Identità</h2>
-    <form [formGroup]="addIdentityForm" (ngSubmit)="onSubmit()">
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700"
-          >Nome Identità</label
-        >
-        <input
-          type="text"
-          formControlName="title"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-          required
-        />
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700"
-          >Descrizione</label
-        >
-        <textarea
-          formControlName="description"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-          required
-        ></textarea>
-      </div>
-      <div class="flex justify-end">
-        <button
-          type="button"
-          class="mr-4 py-2 px-4 border border-gray-300 rounded-md shadow-sm"
-          (click)="closeAddIdentityModal()"
-        >
-          Annulla
-        </button>
-        <button
-          type="submit"
-          class="py-2 px-4 bg-blue-500 text-white rounded-md shadow-sm"
-        >
-          Salva
-        </button>
-      </div>
-    </form>
+<div *ngIf="isAddIdentityModalOpen" class="modal-container">
+  <div class="modal-overlay" (click)="closeAddIdentityModal()"></div>
+  <div class="modal-content modal-enter">
+    <div class="modal-header">
+      <h2 class="text-2xl font-bold mb-4">Aggiungi Identità</h2>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="addIdentityForm" (ngSubmit)="onSubmit()">
+        <div class="mb-4">
+          <label
+            class="block text-sm font-medium text-gray-700 flex items-center"
+          >
+            Nome Identità
+            <i
+              class="fas fa-chevron-down ml-2 cursor-pointer"
+              (click)="toggleHelp('title')"
+            ></i>
+          </label>
+          <input
+            type="text"
+            formControlName="title"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            required
+          />
+          <div *ngIf="showHelp.title" class="text-gray-600 text-sm mt-1">
+            <ul class="help-list">
+              <strong>Linee guida:</strong>
+              <ul class="help-list">
+                <li>Sii specifico e chiaro.</li>
+                <li>
+                  Assicurati che il titolo rifletta chiaramente l'identità che
+                  desideri adottare.
+                </li>
+              </ul>
+              <strong>Esempio:</strong>
+              <ul class="help-list">
+                <li>"Persona disciplinata e in forma"</li>
+              </ul>
+            </ul>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label
+            class="block text-sm font-medium text-gray-700 flex items-center"
+          >
+            Descrizione
+            <i
+              class="fas fa-chevron-down ml-2 cursor-pointer"
+              (click)="toggleHelp('description')"
+            ></i>
+          </label>
+          <textarea
+            formControlName="description"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            required
+          ></textarea>
+          <div *ngIf="showHelp.description" class="text-gray-600 text-sm mt-1">
+            <ul class="help-list">
+              <strong>Linee guida:</strong>
+              <ul class="help-list">
+                <li>
+                  Descrivi chi desideri diventare in modo dettagliato e
+                  specifico.
+                </li>
+                <li>Spiega perché questa identità è importante per te.</li>
+                <li>
+                  Utilizza frasi che riflettano le tue credenze e i tuoi valori.
+                </li>
+                <li>
+                  Rendi la tua descrizione motivante e allineata con i tuoi
+                  obiettivi a lungo termine.
+                </li>
+              </ul>
+              <strong>Esempio:</strong>
+              <ul class="help-list">
+                <li>
+                  "Voglio essere una persona disciplinata e in forma perché
+                  valorizzo la salute e il benessere. Ogni giorno, mi impegno a
+                  fare esercizio fisico, mangiare cibi sani e meditare per
+                  mantenere un equilibrio mentale."
+                </li>
+              </ul>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="modal-button-cancel"
+            (click)="closeAddIdentityModal()"
+          >
+            Annulla
+          </button>
+          <button type="submit" class="modal-button">Salva</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

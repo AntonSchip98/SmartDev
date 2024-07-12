@@ -44,6 +44,7 @@ public class ApplicationSecurityConfig {
 
         return authenticationManagerBuilder.build();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

@@ -23,6 +23,12 @@ const routes: Routes = [
       import('./account/account.module').then((m) => m.AccountModule),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'identity',
+    loadChildren: () =>
+      import('./identity/identity.module').then((m) => m.IdentityModule),
+    canActivate: [AuthGuard],
+  },
 ];
 
 @NgModule({

@@ -1,8 +1,79 @@
-/* src/app/user/user.component.scss */
+@import "tailwindcss/utilities";
 
+// Animazioni per l'ingresso e l'uscita delle modali
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+}
+
+.modal-enter {
+  animation: modalFadeIn 0.3s ease-out forwards;
+}
+
+.modal-leave {
+  animation: modalFadeOut 0.3s ease-in forwards;
+}
+
+// Stili comuni per le modali
+.modal-overlay {
+  @apply fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity;
+}
+
+.modal-container {
+  @apply fixed inset-0 z-10 w-screen overflow-y-auto flex items-center justify-center;
+}
+
+.modal-content {
+  @apply relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg;
+}
+
+.modal-header {
+  @apply bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-200;
+}
+
+.modal-body {
+  @apply bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4;
+}
+
+.modal-footer {
+  @apply bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-200;
+}
+
+.modal-button {
+  @apply inline-flex w-full justify-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:w-auto;
+}
+
+.modal-button-cancel {
+  @apply mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto;
+}
+
+// Aggiungi padding per migliorare la visibilità sui dispositivi mobili
+@screen sm {
+  .modal-button {
+    @apply px-4 py-2;
+  }
+}
+
+// Stili specifici per il componente
 .user {
   padding: 1rem;
-
   margin-top: 4rem; /* Adjust to match the height of the navbar */
 }
 
@@ -40,6 +111,10 @@
 
 .text-gray-700 {
   color: #4a5568;
+}
+
+.text-gray-900 {
+  color: #1a202c;
 }
 
 .bg-white {
@@ -123,109 +198,4 @@
 
 .mt-16 {
   margin-top: 4rem; /* Adjust to match the height of the navbar */
-}
-
-.btn-change-photo:hover,
-.btn-delete-photo:hover,
-.btn-change-email:hover,
-.btn-add-password:hover {
-  @apply bg-gray-300;
-}
-
-.btn-delete-photo:hover {
-  @apply bg-red-600;
-}
-
-.fixed {
-  &.inset-0 {
-    @apply flex items-center justify-center bg-black bg-opacity-50;
-    z-index: 50;
-  }
-}
-
-.bg-white {
-  @apply p-8 rounded shadow-lg;
-  max-width: 100%;
-  width: 32rem;
-}
-
-.mt-1 {
-  margin-top: 0.25rem;
-}
-
-.mb-4 {
-  margin-bottom: 1rem;
-}
-
-.block {
-  display: block;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.border {
-  &.border-gray-300 {
-    border-color: #d1d5db;
-  }
-}
-
-.rounded-md {
-  border-radius: 0.375rem;
-}
-
-.shadow-sm {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.bg-blue-500 {
-  background-color: #3b82f6;
-  color: white;
-}
-
-.bg-blue-500:hover {
-  background-color: #2563eb;
-}
-
-.text-white {
-  color: white;
-}
-
-.border-gray-300 {
-  border-color: #d1d5db;
-}
-
-.text-sm {
-  font-size: 0.875rem;
-}
-
-.text-gray-700 {
-  color: #4b5563;
-}
-
-.text-gray-500 {
-  color: #6b7280;
-}
-
-.font-medium {
-  font-weight: 500;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-.py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-
-.max-w-lg {
-  max-width: 32rem;
 }

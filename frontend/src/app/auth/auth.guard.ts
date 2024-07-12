@@ -21,7 +21,11 @@ export class AuthGuard {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): MaybeAsync<GuardResult> {
+    const isLoggedIn = this.authSvc.syncIsLoggedIn;
+    console.log('AuthGuard canActivate:', isLoggedIn);
     if (!this.authSvc.syncIsLoggedIn) {
+      console.log('User not logged in, redirecting to /auth/login');
+
       this.router.navigate(['/auth/login']);
     }
     return this.authSvc.syncIsLoggedIn;

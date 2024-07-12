@@ -45,7 +45,7 @@ export class AccountComponent {
   }
 
   closeChangePhotoModal(): void {
-    this.isChangePhotoModalOpen = false;
+    this.animateModalClose('isChangePhotoModalOpen');
   }
 
   onFileSelected(event: Event): void {
@@ -79,7 +79,7 @@ export class AccountComponent {
   }
 
   closeUpdateDataModal(): void {
-    this.isUpdateDataModalOpen = false;
+    this.animateModalClose('isUpdateDataModalOpen');
   }
 
   onSubmitUpdateData(): void {
@@ -100,6 +100,19 @@ export class AccountComponent {
           console.error('Failed to update user data', err);
         },
       });
+    }
+  }
+
+  private animateModalClose(modalProperty: keyof AccountComponent) {
+    const modalElement = document.querySelector('.modal-content');
+    if (modalElement) {
+      modalElement.classList.remove('modal-enter');
+      modalElement.classList.add('modal-leave');
+      setTimeout(() => {
+        (this[modalProperty] as boolean) = false;
+      }, 300); // Match the duration of the animation
+    } else {
+      (this[modalProperty] as boolean) = false;
     }
   }
 }

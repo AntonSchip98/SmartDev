@@ -11,6 +11,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IdentityService } from '../../Services/identity.service';
 import { CreateIdentityDto } from '../../Models/identityModel/create-identity-dto';
 import { UserService } from '../../Services/comunication.service';
+import { Router } from '@angular/router';
+import { IdentityDto } from '../../Models/identityModel/identity-dto';
+
+type HelpFields = 'title' | 'description';
 
 @Component({
   selector: 'app-navbar',
@@ -24,6 +28,12 @@ export class NavbarComponent {
   userImg: string = '';
   isAddIdentityModalOpen: boolean = false;
   addIdentityForm: FormGroup;
+  identities: IdentityDto[] = [];
+
+  showHelp: Record<HelpFields, boolean> = {
+    title: false,
+    description: false,
+  };
 
   @Output() navbarToggled = new EventEmitter<boolean>();
 
@@ -31,7 +41,8 @@ export class NavbarComponent {
     private authSvc: AuthService,
     private fb: FormBuilder,
     private identityService: IdentityService,
-    private communicationService: UserService
+    private communicationService: UserService,
+    private router: Router
   ) {
     this.addIdentityForm = this.fb.group({
       title: ['', Validators.required],
@@ -49,6 +60,8 @@ export class NavbarComponent {
       } else {
         this.isNavbarOpen = true;
         this.navbarToggled.emit(this.isNavbarOpen);
+
+        this.loadIdentities();
       }
     });
 
@@ -60,6 +73,17 @@ export class NavbarComponent {
           this.userImg = data?.avatar || 'https://via.placeholder.com/40';
         });
       }
+    });
+
+    // Subscribe to the event to reload identities when an identity is added or deleted
+    this.communicationService.identityAdded$.subscribe(() => {
+      this.loadIdentities();
+    });
+  }
+
+  loadIdentities() {
+    this.identityService.getAllIdentitiesByUser().subscribe((identities) => {
+      this.identities = identities;
     });
   }
 
@@ -84,6 +108,14 @@ export class NavbarComponent {
     this.addIdentityForm.reset();
   }
 
+  toggleHelp(field: HelpFields): void {
+    const isCurrentlyOpen = this.showHelp[field];
+    Object.keys(this.showHelp).forEach((key) => {
+      this.showHelp[key as HelpFields] = false;
+    });
+    this.showHelp[field] = !isCurrentlyOpen;
+  }
+
   onSubmit() {
     if (this.addIdentityForm.valid) {
       const identityData: CreateIdentityDto = {
@@ -96,8 +128,14 @@ export class NavbarComponent {
         .subscribe(() => {
           this.closeAddIdentityModal();
           this.communicationService.announceIdentityAdded(); // Announce the identity added event
+          this.loadIdentities();
         });
     }
+  }
+
+  navigateToIdentity(identityId: number): void {
+    this.router.navigate(['/identity', identityId]);
+    this.closeNavbarOnMobile();
   }
 
   preventSidebarClose(event: Event) {

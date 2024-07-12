@@ -1,10 +1,23 @@
+<!-- dashboard.component.html -->
 <div class="dashboard p-4 md:p-8">
-  <h1 class="text-2xl font-bold mb-6">Today</h1>
+  <p class="text-4xl font-bold mb-1">Today:</p>
+  <div class="quote mb-6 p-4 rounded-lg">
+    <p class="text-lg italic">"{{ quote.content }}"</p>
+    <p class="text-right font-semibold">- {{ quote.author }}</p>
+  </div>
   <div *ngFor="let identity of identities; let i = index" class="projects mb-8">
-    <h2 class="text-lg font-semibold mb-4">{{ identity.title }}</h2>
+    <h2
+      (click)="navigateToIdentity(identity.id)"
+      class="text-lg font-semibold mb-4"
+    >
+      {{ identity.title }}
+
+      <i class="fa-brands fa-pagelines text-green-500"></i>
+    </h2>
     <div
       *ngFor="let task of tasks[i]; let j = index"
-      class="task mb-2 flex items-start justify-between"
+      [ngClass]="{ 'task-completed': task.completed, task: true }"
+      class="mb-2 flex items-start justify-between"
     >
       <div class="flex items-center">
         <input
@@ -12,6 +25,7 @@
           class="custom-checkbox mr-3"
           [checked]="task.completed"
           (change)="toggleCompleteTask(i, j)"
+          [disabled]="task.completed"
         />
         <div>
           <span class="text-sm">{{ task.title }}</span>
@@ -20,7 +34,9 @@
           </div>
         </div>
       </div>
-      <span class="hidden sm:block text-sm text-gray-500">{{ task.cue }}</span>
+      <span class="hidden sm:block text-sm text-gray-500">
+        {{ task.completed ? task.reward : task.cue }}
+      </span>
     </div>
     <button
       class="add-task text-sm text-red-500 hover:underline"
@@ -28,81 +44,274 @@
     >
       + Add task
     </button>
+    <!-- Aggiungi il separatore se non è l'ultima identità -->
+    <hr
+      *ngIf="i < identities.length - 1"
+      class="my-4 border-t border-gray-300"
+    />
   </div>
 </div>
 
 <!-- Modal for adding a new task -->
-<div
-  *ngIf="isAddTaskModalOpen"
-  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
->
-  <div class="bg-white p-8 rounded shadow-lg w-full max-w-lg">
-    <h2 class="text-2xl font-bold mb-4">Add Task</h2>
-    <form [formGroup]="addTaskForm" (ngSubmit)="onSubmitTask()">
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Title</label>
-        <input
-          type="text"
-          formControlName="title"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-        />
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700"
-          >Description</label
-        >
-        <textarea
-          formControlName="description"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-        ></textarea>
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Cue</label>
-        <input
-          type="text"
-          formControlName="cue"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-        />
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Craving</label>
-        <input
-          type="text"
-          formControlName="craving"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-        />
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Response</label>
-        <input
-          type="text"
-          formControlName="response"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-        />
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Reward</label>
-        <input
-          type="text"
-          formControlName="reward"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
-        />
-      </div>
-      <div class="flex justify-end">
-        <button
-          type="button"
-          class="mr-4 py-2 px-4 border border-gray-300 rounded-md shadow-sm"
-          (click)="closeAddTaskModal()"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          class="py-2 px-4 bg-blue-500 text-white rounded-md shadow-sm"
-        >
-          Add Task
-        </button>
-      </div>
-    </form>
+<div *ngIf="isAddTaskModalOpen" class="modal-container">
+  <div class="modal-overlay" (click)="closeAddTaskModal()"></div>
+  <div class="modal-content modal-enter">
+    <div class="modal-header">
+      <h2 class="text-2xl font-bold">Add Task</h2>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="addTaskForm" (ngSubmit)="onSubmitTask()">
+        <div class="mb-4">
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-medium text-gray-700">Title</label>
+            <i
+              class="fas fa-chevron-down cursor-pointer"
+              (click)="toggleHelp('title')"
+            ></i>
+          </div>
+          <input
+            type="text"
+            formControlName="title"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          />
+          <div *ngIf="showHelp.title" class="text-gray-500 text-sm mt-1">
+            <ul class="help-list">
+              <strong>Linee guida:</strong>
+              <ul class="help-list">
+                <li>Sii specifico e chiaro.</li>
+                <li>
+                  Assicurati che il titolo indichi chiaramente l'azione che
+                  desideri trasformare in abitudine.
+                </li>
+              </ul>
+              <strong>Esempio:</strong>
+              <p>"Camminata serale di 30 minuti"</p>
+            </ul>
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-medium text-gray-700"
+              >Description</label
+            >
+            <i
+              class="fas fa-chevron-down cursor-pointer"
+              (click)="toggleHelp('description')"
+            ></i>
+          </div>
+          <textarea
+            formControlName="description"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          ></textarea>
+          <div *ngIf="showHelp.description" class="text-gray-500 text-sm mt-1">
+            <ul class="help-list">
+              <strong>Linee guida:</strong>
+              <ul class="help-list">
+                <li>Dettaglia esattamente cosa farai, quando e dove.</li>
+                <li>
+                  Spiega brevemente il motivo per cui vuoi adottare questa
+                  abitudine.
+                </li>
+                <li>
+                  Mantieni la descrizione semplice e facile da visualizzare.
+                </li>
+              </ul>
+              <strong>Esempio:</strong>
+              <p>
+                "Ogni sera, subito dopo cena, farò una camminata di 30 minuti
+                nel parco vicino casa. Questo mi aiuterà a rilassarmi, digerire
+                meglio e migliorare la mia forma fisica."
+              </p>
+            </ul>
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-medium text-gray-700">Cue</label>
+            <i
+              class="fas fa-chevron-down cursor-pointer"
+              (click)="toggleHelp('cue')"
+            ></i>
+          </div>
+          <input
+            type="text"
+            formControlName="cue"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          />
+          <div *ngIf="showHelp.cue" class="text-gray-500 text-sm mt-1">
+            <ul class="help-list">
+              <strong>Linee guida:</strong>
+              <ul class="help-list">
+                <li>
+                  Identifica un segnale chiaro e specifico che innescherà
+                  l'abitudine.
+                </li>
+                <li>
+                  Può essere un'azione, un'ora del giorno, un luogo o un evento.
+                </li>
+                <li>
+                  Usa l'intenzione di implementazione: "Farò [AZIONE] a [ORA] in
+                  [LUOGO]".
+                </li>
+                <li>
+                  Usa il stacking delle abitudini: "Dopo [ABITUDINE ATTUALE],
+                  farò [NUOVA ABITUDINE]".
+                </li>
+              </ul>
+              <strong>Esempio:</strong>
+              <p>"Finire di cenare alle 19:00."</p>
+            </ul>
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-medium text-gray-700"
+              >Craving</label
+            >
+            <i
+              class="fas fa-chevron-down cursor-pointer"
+              (click)="toggleHelp('craving')"
+            ></i>
+          </div>
+          <input
+            type="text"
+            formControlName="craving"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          />
+          <div *ngIf="showHelp.craving" class="text-gray-500 text-sm mt-1">
+            <ul class="help-list">
+              <strong>Linee guida:</strong>
+              <ul class="help-list">
+                <li>
+                  Definisci il desiderio o il bisogno che l'abitudine
+                  soddisferà.
+                </li>
+                <li>
+                  Concentrati su come ti sentirai o su quale problema risolverai
+                  adottando questa abitudine.
+                </li>
+                <li>
+                  Rendi l'abitudine attraente. Usa il bundling delle tentazioni:
+                  "Abbina un'azione che vuoi fare con un'azione che devi fare".
+                </li>
+                <li>
+                  Unisciti a una cultura in cui il comportamento desiderato è
+                  normale.
+                </li>
+                <li>
+                  Crea un rituale di motivazione. Fai qualcosa che ti piace
+                  immediatamente prima di una abitudine difficile.
+                </li>
+              </ul>
+              <strong>Esempio:</strong>
+              <p>
+                "Voglio rilassarmi dopo cena e migliorare la mia digestione."
+              </p>
+            </ul>
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-medium text-gray-700"
+              >Response</label
+            >
+            <i
+              class="fas fa-chevron-down cursor-pointer"
+              (click)="toggleHelp('response')"
+            ></i>
+          </div>
+          <input
+            type="text"
+            formControlName="response"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          />
+          <div *ngIf="showHelp.response" class="text-gray-500 text-sm mt-1">
+            <ul class="help-list">
+              <strong>Linee guida:</strong>
+              <ul class="help-list">
+                <li>
+                  Descrivi l'azione specifica che prenderai in risposta al
+                  segnale.
+                </li>
+                <li>
+                  Assicurati che l'azione sia semplice e facilmente eseguibile.
+                </li>
+                <li>
+                  Riduci la frizione. Progetta l'ambiente per rendere le buone
+                  abitudini più facili da eseguire.
+                </li>
+                <li>
+                  Fai in modo che la nuova abitudine sia la via di minor
+                  resistenza.
+                </li>
+                <li>Focalizzati sull'azione, non sulla pianificazione.</li>
+                <li>
+                  Automatizza l'abitudine. Più ripetizioni, meno sforzo
+                  richiesto.
+                </li>
+              </ul>
+              <strong>Esempio:</strong>
+              <p>
+                "Indosso le scarpe da ginnastica e inizio a camminare verso il
+                parco."
+              </p>
+            </ul>
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-medium text-gray-700"
+              >Reward</label
+            >
+            <i
+              class="fas fa-chevron-down cursor-pointer"
+              (click)="toggleHelp('reward')"
+            ></i>
+          </div>
+          <input
+            type="text"
+            formControlName="reward"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          />
+          <div *ngIf="showHelp.reward" class="text-gray-500 text-sm mt-1">
+            <ul class="help-list">
+              <strong>Linee guida:</strong>
+              <ul class="help-list">
+                <li>
+                  Specifica una ricompensa immediata e piacevole che otterrai
+                  dopo aver completato l'abitudine.
+                </li>
+                <li>
+                  La ricompensa dovrebbe essere qualcosa che ti motiva e ti fa
+                  sentire bene.
+                </li>
+                <li>
+                  Rendi la ricompensa soddisfacente. Rendi visibile il progresso
+                  e celebra le piccole vittorie.
+                </li>
+                <li>
+                  Fai in modo che la ricompensa sia allineata con i tuoi
+                  obiettivi a lungo termine.
+                </li>
+              </ul>
+              <strong>Esempio:</strong>
+              <p>
+                "Mi concedo un momento di relax sul divano con un buon libro."
+              </p>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="modal-button-cancel"
+            (click)="closeAddTaskModal()"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="modal-button">Add Task</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

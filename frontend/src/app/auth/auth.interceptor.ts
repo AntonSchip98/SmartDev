@@ -19,6 +19,7 @@ export class AuthInterceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
     const accessToken = this.authSvc.getAccessToken();
+    console.log('Interceptor adding token:', accessToken);
 
     if (accessToken) {
       const newRequest = request.clone({

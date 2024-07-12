@@ -21,7 +21,10 @@ export class GuestGuard {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): MaybeAsync<GuardResult> {
+    const isLoggedIn = this.authSvc.syncIsLoggedIn;
+    console.log('GuestGuard canActivate:', isLoggedIn);
     if (this.authSvc.syncIsLoggedIn) {
+      console.log('User already logged in, redirecting to /dashboard');
       this.router.navigate(['/dashboard']);
     }
     return !this.authSvc.syncIsLoggedIn;

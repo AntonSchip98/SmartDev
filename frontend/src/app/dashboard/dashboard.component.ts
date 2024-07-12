@@ -6,6 +6,15 @@ import { IdentityService } from '../Services/identity.service';
 import { AuthService } from '../auth/auth.service';
 import { TaskService } from '../Services/task.service';
 import { UserService } from '../Services/comunication.service';
+import { Router } from '@angular/router';
+
+type HelpFields =
+  | 'title'
+  | 'description'
+  | 'cue'
+  | 'craving'
+  | 'response'
+  | 'reward';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,13 +27,24 @@ export class DashboardComponent {
   isAddTaskModalOpen: boolean = false;
   addTaskForm: FormGroup;
   selectedIdentityIndex: number | null = null;
+  showHelp: Record<HelpFields, boolean> = {
+    title: false,
+    description: false,
+    cue: false,
+    craving: false,
+    response: false,
+    reward: false,
+  };
+
+  quote: { content: string; author: string } = { content: '', author: '' };
 
   constructor(
     private identityService: IdentityService,
     private taskService: TaskService,
     private authService: AuthService,
     private communicationService: UserService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
     this.addTaskForm = this.fb.group({
       title: ['', Validators.required],
@@ -38,6 +58,7 @@ export class DashboardComponent {
 
   ngOnInit(): void {
     this.loadIdentities();
+    this.getQuoteOfTheDay();
 
     this.communicationService.identityAdded$.subscribe(() => {
       this.loadIdentities(); // Reload identities when a new one is added
@@ -53,7 +74,11 @@ export class DashboardComponent {
       if (this.identities && this.identities.length > 0) {
         this.identities.forEach((identity, index) => {
           if (identity.id) {
-            this.taskService.getAllTasksByIdentity(identity.id);
+            this.taskService
+              .getAllTasksByIdentity(identity.id)
+              .subscribe((tasks) => {
+                this.tasks[index] = tasks;
+              });
           }
         });
       }
@@ -78,10 +103,12 @@ export class DashboardComponent {
 
   toggleCompleteTask(identityIndex: number, taskIndex: number): void {
     const task = this.tasks[identityIndex][taskIndex];
-    task.completed = !task.completed;
-    this.taskService.updateTask(task.id, task).subscribe(() => {
-      // Update the task list if necessary
-    });
+    if (!task.completed) {
+      task.completed = true;
+      this.taskService.updateTask(task.id, task).subscribe(() => {
+        // Update the task list if necessary
+      });
+    }
   }
 
   openAddTaskModal(identityIndex: number): void {
@@ -90,9 +117,17 @@ export class DashboardComponent {
   }
 
   closeAddTaskModal(): void {
-    this.isAddTaskModalOpen = false;
-    this.addTaskForm.reset();
-    this.selectedIdentityIndex = null;
+    this.animateModalClose('isAddTaskModalOpen');
+  }
+
+  toggleHelp(field: HelpFields): void {
+    const isCurrentlyOpen = this.showHelp[field];
+    // Close all help fields
+    Object.keys(this.showHelp).forEach((key) => {
+      this.showHelp[key as HelpFields] = false;
+    });
+    // Toggle the selected help field
+    this.showHelp[field] = !isCurrentlyOpen;
   }
 
   onSubmitTask(): void {
@@ -110,5 +145,30 @@ export class DashboardComponent {
         this.loadTasks(); // Reload tasks after adding a new one
       });
     }
+  }
+
+  navigateToIdentity(identityId: number): void {
+    this.router.navigate(['/identity', identityId]);
+  }
+
+  private animateModalClose(modalProperty: keyof DashboardComponent) {
+    const modalElement = document.querySelector('.modal-content');
+    if (modalElement) {
+      modalElement.classList.remove('modal-enter');
+      modalElement.classList.add('modal-leave');
+      setTimeout(() => {
+        (this[modalProperty] as boolean) = false;
+        this.addTaskForm.reset(); // Reset the form when the modal is closed
+      }, 300); // Match the duration of the animation
+    } else {
+      (this[modalProperty] as boolean) = false;
+      this.addTaskForm.reset(); // Reset the form when the modal is closed
+    }
+  }
+
+  private getQuoteOfTheDay(): void {
+    this.communicationService.getQuote().subscribe((quote) => {
+      this.quote = quote;
+    });
   }
 }
