@@ -18,8 +18,8 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         //UNA VOLTA DEPLOYATO IL FRONTEND BISOGNA AGGIUNGERE L'ORIGIN DOVE E STATO FATTO IL DEPLOY
         configuration.addAllowedOrigin("http://localhost:4200");
-        configuration.addAllowedMethod("");
-        configuration.addAllowedHeader("");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
 
         // Setta i permessi per le richieste preflight (OPTIONS)

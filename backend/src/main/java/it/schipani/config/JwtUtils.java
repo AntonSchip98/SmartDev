@@ -1,5 +1,6 @@
 package it.schipani.config;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -17,19 +18,24 @@ public class JwtUtils {
 
     @Value("${jwt.key}")
     private String securityKey;
+
     @Value("${jwt.expirationMs}")
     private long expirationMs;
 
-    public String generateToken(Authentication auth) {
+    private SecretKey getSigningKey() {
         byte[] keyBytes = securityKey.getBytes();
-        Key key = Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
-        var user = (SecurityUserDetails) auth.getPrincipal();
+    public String generateToken(Authentication auth) {
+        SecurityUserDetails user = (SecurityUserDetails) auth.getPrincipal();
+        SecretKey key = getSigningKey();
+
         return Jwts.builder()
                 .subject(user.getUsername())
                 .issuedAt(new Date())
                 .issuer("MySpringApplication")
-                .expiration(new Date(new Date().getTime() + expirationMs))
+                .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key)
                 //ESISTONO I CLAIM OVVERO SONO INFORMAZIONI AGGIUNTIVE CHE POSOSNO ESSERE AGGIUNTE AL TOKEN .claim("professore dell'aula", "Mauro")
                 .compact();
@@ -37,24 +43,16 @@ public class JwtUtils {
 
     public boolean isTokenValid(String token) {
         try {
-            byte[] keyBytes = securityKey.getBytes();
-            SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-            //PRENDIAMO LA DATA DI SCADENZA DAL TOKEN
-            Date expirationDate = Jwts.parser()
-                    .verifyWith(key).build()
-                    .parseSignedClaims(token).getPayload().getExpiration();
+            SecretKey key = getSigningKey();
 
-            //token valido fino a 2024-04-01
-            //token verificato il 2024-06-13
+            Jwts.parser().verifyWith(key)
+                    .requireIssuer("MySpringApplication").build().
+                    parseSignedClaims(token);
 
-            //token valido fino 2024-06-13 10:01:00
-            //token verifcato il 2024-06-13 10:02:00
-            //VERIFICHIAMO SE LA DATA DI SCADENZA TROVATA E PRIMA O DOPO LA DATA DI OGGI
+            Date expirationDate = getExpirationDateFromToken(token);
             if (expirationDate.before(new Date()))
                 throw new JwtException("Token expired");
-            Jwts.parser()
-                    .verifyWith(key).requireIssuer("MySpringApplication");
             return true;
         } catch (Exception e) {
             return false;
@@ -62,10 +60,23 @@ public class JwtUtils {
     }
 
     public String getUsernameFromToken(String token) {
-        byte[] keyBytes = securityKey.getBytes();
-        SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+        SecretKey key = getSigningKey();
         return Jwts.parser()
-                .verifyWith(key).build()
-                .parseSignedClaims(token).getPayload().getSubject();
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
     }
+
+    private Date getExpirationDateFromToken(String token) {
+        SecretKey key = getSigningKey();
+        Claims claims = Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.getExpiration();
+    }
+
 }

@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
-
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serial;
@@ -14,7 +13,11 @@ import java.util.Collection;
 @Data
 @AllArgsConstructor
 @Builder(setterPrefix = "with")
+/* implementa l'interfaccia UserDetails di Spring Security, utilizzata per rappresentare le
+informazioni di autenticazione e autorizzazione di un utente. La classe è annotata con Lombok
+ per ridurre il boilerplate code.*/
 public class SecurityUserDetails implements UserDetails {
+
     @Serial
     private static final long serialVersionUID = 1L;
 

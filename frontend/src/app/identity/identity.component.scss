@@ -1,0 +1,144 @@
+@import "tailwindcss/utilities";
+
+// Animazioni per l'ingresso e l'uscita delle modali
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+}
+
+.modal-enter {
+  animation: modalFadeIn 0.3s ease-out forwards;
+}
+
+.modal-leave {
+  animation: modalFadeOut 0.3s ease-in forwards;
+}
+
+// Stili comuni per le modali
+.modal-overlay {
+  @apply fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity;
+}
+
+.modal-container {
+  @apply fixed inset-0 z-10 w-screen overflow-y-auto flex items-center justify-center;
+}
+
+.modal-content {
+  @apply relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg;
+}
+
+.modal-header {
+  @apply bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-200;
+}
+
+.modal-body {
+  @apply bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4;
+}
+
+.modal-footer {
+  @apply bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-200;
+}
+
+.modal-button {
+  @apply inline-flex w-full justify-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:w-auto;
+}
+
+.modal-button-cancel {
+  @apply mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto;
+}
+
+// Aggiungi padding per migliorare la visibilità sui dispositivi mobili
+@screen sm {
+  .modal-button {
+    @apply px-4 py-2;
+  }
+}
+
+// Stili specifici per il componente
+.identity {
+  margin-top: 4rem;
+  padding: 1rem;
+
+  h1 span {
+    @apply capitalize;
+  }
+}
+
+.custom-checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #db4c3f;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  margin-right: 0.75rem;
+  position: relative;
+
+  &:checked::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #db4c3f;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.task {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+  }
+
+  h3 {
+    font-size: 1.25rem; /* 20px */
+    font-weight: 600;
+  }
+
+  .text-gray-500 {
+    color: #6b7280;
+  }
+
+  .text-gray-800 {
+    color: #1f2937;
+  }
+
+  .text-gray-600 {
+    color: #4b5563;
+  }
+}
+
+p {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+  color: #4b5563; /* Tailwind gray-600 */
+}

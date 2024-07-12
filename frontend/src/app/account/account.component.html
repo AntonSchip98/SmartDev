@@ -1,0 +1,121 @@
+<!-- src/app/account/account.component.html -->
+<div class="user">
+  <h1 class="text-4xl font-bold mb-6">Profile:</h1>
+  <div *ngIf="user" class="flex flex-col items-start">
+    <div class="flex items-center mb-6">
+      <img
+        [src]="userImg"
+        alt="Profile photo"
+        class="w-24 h-24 rounded-full object-cover mr-4"
+      />
+      <div class="flex flex-col">
+        <button
+          (click)="openChangePhotoModal()"
+          class="bg-gray-200 text-gray-700 px-4 py-2 mb-2 rounded"
+        >
+          Cambia foto
+        </button>
+      </div>
+    </div>
+    <p class="text-sm text-gray-600 mb-4">
+      Scegli una foto che non superi i 4MB. La tua foto profilo sarà pubblica.
+    </p>
+    <div class="w-full mb-4">
+      <label class="block text-gray-700">Nome</label>
+      <div class="flex items-center">
+        <p class="flex-grow p-2 border border-gray-300 rounded bg-gray-100">
+          {{ user.username }}
+        </p>
+      </div>
+    </div>
+    <div class="w-full mb-4">
+      <label class="block text-gray-700">Email</label>
+      <div class="flex items-center">
+        <p class="flex-grow p-2 border border-gray-300 rounded bg-gray-100">
+          {{ user.email }}
+        </p>
+      </div>
+    </div>
+    <div class="w-full mb-4">
+      <label class="block text-gray-700">Modifica</label>
+      <button
+        (click)="openUpdateDataModal()"
+        class="bg-gray-200 text-gray-700 px-4 py-2 rounded"
+      >
+        Aggiorna dati
+      </button>
+    </div>
+  </div>
+  <div *ngIf="!user">
+    <p>User not logged in.</p>
+  </div>
+</div>
+
+<!-- Change Photo Modal -->
+<div *ngIf="isChangePhotoModalOpen" class="modal-container">
+  <div class="modal-overlay" (click)="closeChangePhotoModal()"></div>
+  <div class="modal-content modal-enter">
+    <div class="modal-header">
+      <h2 class="text-2xl font-bold">Cambia Foto</h2>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="onSubmitChangePhoto()" #changePhotoForm="ngForm">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700"
+            >Seleziona nuova foto</label
+          >
+          <input
+            type="file"
+            (change)="onFileSelected($event)"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            required
+          />
+        </div>
+        <div class="flex justify-end">
+          <button
+            type="button"
+            (click)="closeChangePhotoModal()"
+            class="modal-button-cancel"
+          >
+            Annulla
+          </button>
+          <button type="submit" class="modal-button">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Update Data Modal -->
+<div *ngIf="isUpdateDataModalOpen" class="modal-container">
+  <div class="modal-overlay" (click)="closeUpdateDataModal()"></div>
+  <div class="modal-content modal-enter">
+    <div class="modal-header">
+      <h2 class="text-2xl font-bold">Aggiorna Dati</h2>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="onSubmitUpdateData()" #updateDataForm="ngForm">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <input
+            type="email"
+            [(ngModel)]="updatedEmail"
+            name="email"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            required
+          />
+        </div>
+        <div class="flex justify-end">
+          <button
+            type="button"
+            (click)="closeUpdateDataModal()"
+            class="modal-button-cancel"
+          >
+            Annulla
+          </button>
+          <button type="submit" class="modal-button">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

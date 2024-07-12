@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(setterPrefix = "with")
+@EntityListeners(AuditingEntityListener.class)
 public class Task {
 
     @Id
@@ -22,10 +25,10 @@ public class Task {
     private long id;
 
     @Column(length = 100, name = "task_title")
-    private String taskTitle;
+    private String title;
 
     @Column(name = "task_description")
-    private String taskDescription;
+    private String description;
 
     private String cue;
     private String craving;
@@ -33,6 +36,11 @@ public class Task {
     private String reward;
     private boolean completed = false;
 
+    @CreatedDate
     private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "identity_id")
+    private Identity identity;
 
 }
