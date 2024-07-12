@@ -1,7 +1,7 @@
 package it.schipani.config;
 
-import io.jsonwebtoken.JwtException;
 import it.schipani.businessLayer.security.ApplicationUserDetailsService;
+import it.schipani.businessLayer.security.SecurityUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,40 +29,31 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             log.info("Processing AuthTokenFilter");
-
-            String header = request.getHeader("Authorization");
-
+            // legge lo header
+            // Authorization: Bearer TOKEN
+            var header = request.getHeader("Authorization");
             if (header != null && header.startsWith("Bearer ")) {
-                String token = header.substring(7); // Extract the token by removing "Bearer "
+                String token = header.substring(7);
                 log.info("Token: {}", token);
-
-                // Validate the token
-                if (!jwt.isTokenValid(token)) {
-                    throw new JwtException("Invalid token");
-                }
-
-                // Extract username from the token
                 String username = jwt.getUsernameFromToken(token);
                 log.info("Username: {}", username);
 
-                // Load user details using the username
-                var userDetails = userDetailsService.loadUserByUsername(username);
-                log.info("UserDetails: {}", userDetails);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    SecurityUserDetails userDetails = (SecurityUserDetails) userDetailsService.loadUserByUsername(username);
+                    log.info("Details: {}", userDetails);
 
-                // Create authentication token
-                var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // Set authentication in security context
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            } else {
-                log.info("No Authorization header or header does not start with Bearer");
+                    if (jwt.isTokenValid(token)) {
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
+                }
             }
         } catch (Exception e) {
-            log.error("Exception in AuthTokenFilter", e);
+            log.error("Exception in auth filter", e);
         }
 
-        // Continue with the filter chain
         filterChain.doFilter(request, response);
     }
 }

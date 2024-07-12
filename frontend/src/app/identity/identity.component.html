@@ -1,0 +1,210 @@
+<!-- identity.component.html -->
+<div *ngIf="identity" class="identity p-4 md:p-8 min-h-screen">
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-4xl font-bold flex items-center mb-2 text-gray-800">
+        <span class="capitalize">{{ identity.title }}</span>
+        <i class="fa-brands fa-pagelines text-green-500 ml-2"></i>
+      </h1>
+      <p class="text-gray-700 text-lg">
+        <span class="font-semibold">Description:</span>
+        {{ identity.description }}
+      </p>
+    </div>
+    <button
+      class="text-gray-500 hover:text-black-700 ml-4"
+      (click)="openEditIdentityModal()"
+    >
+      <i class="fas fa-pencil-alt"></i>
+    </button>
+  </div>
+
+  <div *ngFor="let task of tasks" class="mb-8 relative">
+    <div
+      class="task p-4 bg-white rounded-lg shadow-md mb-4 hover:shadow-sm hover:scale-101 transition-transform duration-200"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center">
+          <input
+            type="checkbox"
+            class="custom-checkbox mr-3"
+            [checked]="task.completed"
+            disabled
+          />
+          <div>
+            <h3 class="text-xl font-semibold text-gray-900">
+              {{ task.title }}
+            </h3>
+            <div class="text-sm text-gray-500">
+              Created at: {{ task.createdAt | date : "shortDate" }}
+            </div>
+          </div>
+        </div>
+        <button
+          class="text-gray-500 hover:text-black-700 relative"
+          (click)="toggleMenu(task.id)"
+        >
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div
+          *ngIf="menuTaskId === task.id"
+          class="absolute right-0 top-0 mt-10 mr-10 w-48 bg-white rounded-md shadow-lg z-50"
+        >
+          <ul class="py-1">
+            <li>
+              <a
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                (click)="openEditTaskModal(task)"
+                >Edit</a
+              >
+            </li>
+            <li>
+              <a
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                (click)="deleteTask(task.id)"
+                >Delete</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <p class="text-gray-800 mb-2">{{ task.description }}</p>
+      <div class="text-gray-600">
+        <p><span class="font-semibold">Craving:</span> {{ task.craving }}</p>
+        <p><span class="font-semibold">Cue:</span> {{ task.cue }}</p>
+        <p><span class="font-semibold">Response:</span> {{ task.response }}</p>
+        <p><span class="font-semibold">Reward:</span> {{ task.reward }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale per modifica task -->
+  <div *ngIf="isEditTaskModalOpen" class="modal-container">
+    <div class="modal-overlay" (click)="closeEditTaskModal()"></div>
+    <div class="modal-content modal-enter">
+      <div class="modal-header">
+        <h2 class="text-2xl font-bold">Edit Task</h2>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="editTaskForm" (ngSubmit)="onSubmitEditTask()">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Title</label>
+            <input
+              type="text"
+              formControlName="title"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700"
+              >Description</label
+            >
+            <textarea
+              formControlName="description"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            ></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Cue</label>
+            <input
+              type="text"
+              formControlName="cue"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700"
+              >Craving</label
+            >
+            <input
+              type="text"
+              formControlName="craving"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700"
+              >Response</label
+            >
+            <input
+              type="text"
+              formControlName="response"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700"
+              >Reward</label
+            >
+            <input
+              type="text"
+              formControlName="reward"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="modal-button-cancel"
+              (click)="closeEditTaskModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="modal-button">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale per modifica identità -->
+  <div *ngIf="isEditIdentityModalOpen" class="modal-container">
+    <div class="modal-overlay" (click)="closeEditIdentityModal()"></div>
+    <div class="modal-content modal-enter">
+      <div class="modal-header">
+        <h2 class="text-2xl font-bold">Edit Identity</h2>
+      </div>
+      <div class="modal-body">
+        <form
+          [formGroup]="editIdentityForm"
+          (ngSubmit)="onSubmitEditIdentity()"
+        >
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Title</label>
+            <input
+              type="text"
+              formControlName="title"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700"
+              >Description</label
+            >
+            <textarea
+              formControlName="description"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            ></textarea>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="modal-button-cancel"
+              (click)="closeEditIdentityModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="py-2 px-4 bg-red-500 text-white rounded-md shadow-sm"
+              (click)="deleteIdentity()"
+            >
+              Delete Identity
+            </button>
+            <button type="submit" class="modal-button">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,300 @@
+@import "tailwindcss/utilities";
+
+// Animazioni per l'ingresso e l'uscita delle modali
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+}
+
+.modal-enter {
+  animation: modalFadeIn 0.3s ease-out forwards;
+}
+
+.modal-leave {
+  animation: modalFadeOut 0.3s ease-in forwards;
+}
+
+// Stili comuni per le modali
+.modal-overlay {
+  @apply fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity;
+}
+
+.modal-container {
+  @apply fixed inset-0 z-10 w-screen overflow-y-auto flex items-center justify-center;
+}
+
+.modal-content {
+  @apply relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg;
+}
+
+.modal-header {
+  @apply bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-200;
+}
+
+.modal-body {
+  @apply bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4;
+}
+
+.modal-footer {
+  @apply bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-200;
+}
+
+.modal-button {
+  @apply inline-flex w-full justify-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:w-auto;
+}
+
+.modal-button-cancel {
+  @apply mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto;
+}
+
+// Aggiungi padding per migliorare la visibilità sui dispositivi mobili
+@screen sm {
+  .modal-button {
+    @apply px-4 py-2;
+  }
+}
+
+// Stili specifici per il componente
+.dashboard {
+  margin-top: 4rem;
+  padding: 1rem;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+
+  .projects {
+    .task {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 0.5rem 0.5rem;
+      border-radius: 25px;
+      border-bottom: 1px solid #e5e5e5;
+      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+        transform: scale(1.02);
+      }
+
+      &.task-completed {
+        background-color: #e6ffed;
+        opacity: 0.6;
+        border-radius: 25px;
+      }
+
+      input[type="checkbox"] {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #db4c3f;
+        border-radius: 50%;
+        outline: none;
+        cursor: pointer;
+        margin-right: 0.75rem;
+        position: relative;
+
+        &:checked {
+          border-color: #059669; /* Tailwind's green-600 */
+        }
+
+        &:checked::before {
+          content: "";
+          display: block;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #059669; /* Tailwind's green-600 */
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        &:disabled {
+          cursor: not-allowed;
+        }
+      }
+
+      span {
+        font-size: 0.875rem; /* 14px */
+      }
+
+      .text-green-600 {
+        color: #059669; /* Tailwind's green-600 */
+      }
+
+      .text-gray-500 {
+        color: #6b7280; /* Tailwind's gray-500 */
+      }
+
+      .text-gray-900 {
+        color: #1f2937; /* Tailwind's gray-900 */
+      }
+    }
+  }
+
+  .add-task {
+    font-size: 0.875rem; /* 14px */
+    color: #db4c3f;
+    margin-top: 0.5rem;
+    cursor: pointer;
+  }
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.modal-body {
+  margin-bottom: 1rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  button {
+    margin-left: 0.5rem;
+  }
+}
+
+.custom-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+// Stili per i titoli delle identità
+.projects h2 {
+  @apply text-xl font-semibold text-gray-800;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+
+  &:first-letter {
+    @apply uppercase;
+  }
+
+  &:hover {
+    @apply text-blue-500 underline;
+  }
+}
+
+// Stili per la citazione
+.quote {
+  @apply mb-6 p-4  rounded-lg;
+}
+
+// Stili per le caselle di controllo personalizzate
+.custom-checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #db4c3f;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  margin-right: 0.75rem;
+  position: relative;
+
+  &:checked::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #db4c3f;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.task {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+  }
+
+  h3 {
+    font-size: 1.25rem; /* 20px */
+    font-weight: 600;
+  }
+
+  .text-gray-500 {
+    color: #6b7280;
+  }
+
+  .text-gray-800 {
+    color: #1f2937;
+  }
+
+  .text-gray-600 {
+    color: #4b5563;
+  }
+}
+
+p {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+  color: #4b5563; /* Tailwind gray-600 */
+}
+
+.identity {
+  margin-top: 4rem;
+  padding: 1rem;
+}
+
+// Stile per il separatore
+hr {
+  @apply border-t border-gray-300;
+}
+.help-list {
+  list-style-type: disc;
+  margin-left: 1rem;
+}

@@ -1,12 +1,11 @@
 package it.schipani.dataLayer.entities;
 
 import jakarta.persistence.*;
-import jdk.dynalink.linker.LinkerServices;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -33,6 +32,7 @@ public class User {
 
     private String avatar;
 
-    @OneToMany(orphanRemoval = true)
-    private List<Identity> identities;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Size(max = 3)
+    private List<Identity> identities = new ArrayList<>();
 }

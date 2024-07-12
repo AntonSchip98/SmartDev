@@ -1,0 +1,168 @@
+@import "tailwindcss/utilities";
+
+// Animazioni per l'ingresso e l'uscita delle modali
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+}
+
+.modal-enter {
+  animation: modalFadeIn 0.3s ease-out forwards;
+}
+
+.modal-leave {
+  animation: modalFadeOut 0.3s ease-in forwards;
+}
+
+// Stili comuni per le modali
+.modal-overlay {
+  @apply fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity;
+}
+
+.modal-container {
+  @apply fixed inset-0 z-10 w-screen overflow-y-auto flex items-center justify-center;
+}
+
+.modal-content {
+  @apply relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg;
+}
+
+.modal-header {
+  @apply bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-200;
+}
+
+.modal-body {
+  @apply bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4;
+}
+
+.modal-footer {
+  @apply bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-200;
+}
+
+.modal-button {
+  @apply inline-flex w-full justify-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:w-auto;
+}
+
+.modal-button-cancel {
+  @apply mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto;
+}
+
+// Aggiungi padding per migliorare la visibilità sui dispositivi mobili
+@screen sm {
+  .modal-button {
+    @apply px-4 py-2;
+  }
+}
+
+// Stili specifici per la navbar
+.navbar-container {
+  @apply fixed top-0 left-0 h-full z-50;
+}
+
+.sidebar {
+  @apply bg-gray-100 h-full p-4 w-64 fixed top-0 left-0 transition-transform duration-200 ease-in-out z-50;
+}
+
+.profile {
+  @apply flex items-center justify-between mb-6;
+}
+
+.add-task-button {
+  @apply flex items-center bg-red-500 text-white p-2 rounded mb-6 hover:bg-red-600;
+}
+
+.menu-item a {
+  @apply flex items-center text-gray-700 hover:bg-gray-200 p-2 rounded;
+}
+
+.projects {
+  @apply mt-6;
+}
+
+.logout-button {
+  @apply flex items-center bg-red-500 text-white p-2 rounded mt-6 hover:bg-red-600;
+}
+
+.navbar-toggle-button {
+  position: relative;
+  top: 1rem;
+  left: 1rem;
+  z-index: 0;
+}
+
+.navbar-container {
+  position: relative;
+}
+
+.sidebar {
+  border-radius: 0 1rem 1rem 0;
+  left: 2px; /* Spazio dal margine sinistro della pagina */
+}
+
+.profile img {
+  border-radius: 50%;
+}
+
+.add-task-button,
+.logout-button {
+  border-radius: 0.5rem;
+}
+
+.help-list {
+  list-style-type: disc;
+  margin-left: 1rem;
+}
+
+// Stili per il modale della navbar
+.modal-container {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50;
+}
+
+.modal-content {
+  @apply bg-white p-8 rounded-lg shadow-lg w-full max-w-lg;
+}
+
+.modal-header {
+  @apply text-2xl font-bold mb-4;
+}
+
+.modal-body {
+  @apply mb-4;
+}
+
+.modal-footer {
+  @apply flex justify-end;
+
+  button {
+    @apply mr-4 py-2 px-4 border border-gray-300 rounded-md shadow-sm;
+
+    &:last-child {
+      @apply bg-blue-500 text-white;
+    }
+  }
+}
+
+.modal-button-cancel {
+  @apply bg-white text-gray-700;
+}
+
+.modal-button {
+  @apply bg-blue-500 text-white;
+}
